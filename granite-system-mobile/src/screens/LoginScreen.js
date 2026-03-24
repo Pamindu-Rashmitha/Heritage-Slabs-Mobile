@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import api from '../api/axiosConfig'; 
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    StyleSheet,  
+import api from '../api/axiosConfig';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LoginScreen = ({navigation}) => {
+const LoginScreen = ({ navigation }) => {
     // State to hold the user's typed input
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -32,10 +32,14 @@ const LoginScreen = ({navigation}) => {
             // If successful, extract the token
             const token = response.data.token;
             const role = response.data.role;
+            const userId = response.data._id;
 
             await AsyncStorage.setItem('userToken', token);
             await AsyncStorage.setItem('userRole', role);
-            
+            if (userId) {
+                await AsyncStorage.setItem('userId', userId);
+            }
+
             if (role === 'Admin') {
                 navigation.replace('AdminDashboard');
             } else {
@@ -61,7 +65,7 @@ const LoginScreen = ({navigation}) => {
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
-                    autoCapitalize="none" // Stops the phone from capitalizing the first letter of the email
+                    autoCapitalize="none"
                 />
 
                 <TextInput
@@ -69,15 +73,14 @@ const LoginScreen = ({navigation}) => {
                     placeholder="Password"
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry // Hides the password behind dots
+                    secureTextEntry
                 />
 
-                {/* TouchableOpacity is a button that slightly fades when pressed */}
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                    style={{ marginTop: 20, alignItems: 'center' }} 
+                <TouchableOpacity
+                    style={{ marginTop: 20, alignItems: 'center' }}
                     onPress={() => navigation.navigate('Register')}
                 >
                     <Text style={{ color: '#2b2d42', fontSize: 16, fontWeight: '600' }}>

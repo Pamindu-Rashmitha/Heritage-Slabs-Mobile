@@ -44,7 +44,7 @@ const NavItem = ({ icon, label, color, onPress }) => (
     </TouchableOpacity>
 );
 
-const BottomNavBar = ({ onLogout }) => (
+const BottomNavBar = ({ onLogout, onNavigateProfile }) => (
     <View style={styles.bottomNav}>
 
         <NavItem
@@ -62,10 +62,10 @@ const BottomNavBar = ({ onLogout }) => (
         />
 
         <NavItem
-            icon="face-agent"
-            label="Support"
+            icon="account-outline"
+            label="Profile"
             color={COLORS.navInactive}
-            onPress={() => { }}
+            onPress={onNavigateProfile}
         />
 
         <NavItem
@@ -268,7 +268,10 @@ const CustomerCatalogScreen = ({ navigation }) => {
                 }
             />
 
-            <BottomNavBar onLogout={handleLogout} />
+            <BottomNavBar 
+                onLogout={handleLogout} 
+                onNavigateProfile={() => navigation.navigate('Profile')}
+            />
         </SafeAreaView>
     );
 };
