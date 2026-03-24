@@ -78,6 +78,35 @@ const ProfileScreen = ({ navigation }) => {
         }
     };
 
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            'Delete Account',
+            'Are you sure you want to permanently delete your account? This action cannot be undone.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                    text: 'Delete', 
+                    style: 'destructive', 
+                    onPress: async () => {
+                        try {
+                            setSaving(true);
+                            await api.delete(`/auth/delete/${userId}`);
+                            await AsyncStorage.removeItem('userToken');
+                            await AsyncStorage.removeItem('userRole');
+                            await AsyncStorage.removeItem('userId');
+                            Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
+                            navigation.replace('Login');
+                        } catch (error) {
+                            console.error('Delete error:', error);
+                            Alert.alert('Error', error.response?.data?.message || 'Failed to delete account.');
+                            setSaving(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     if (loading) {
         return (
             <SafeAreaView style={styles.loadingContainer}>
@@ -148,6 +177,14 @@ const ProfileScreen = ({ navigation }) => {
                         ) : (
                             <Text style={styles.updateButtonText}>Save Changes</Text>
                         )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        style={styles.deleteButton} 
+                        onPress={handleDeleteAccount}
+                        disabled={saving}
+                    >
+                        <Text style={styles.deleteButtonText}>Delete My Account</Text>
                     </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -249,6 +286,20 @@ const styles = StyleSheet.create({
     updateButtonText: {
         color: '#fff',
         fontSize: 18,
+        fontWeight: 'bold',
+    },
+    deleteButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 20,
+        borderWidth: 1.5,
+        borderColor: '#e63946',
+    },
+    deleteButtonText: {
+        color: '#e63946',
+        fontSize: 16,
         fontWeight: 'bold',
     },
 });

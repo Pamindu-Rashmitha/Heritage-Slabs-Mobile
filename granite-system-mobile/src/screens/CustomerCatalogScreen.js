@@ -48,6 +48,13 @@ const BottomNavBar = ({ onLogout, onNavigateProfile }) => (
     <View style={styles.bottomNav}>
 
         <NavItem
+            icon="account-outline"
+            label="Profile"
+            color={COLORS.navInactive}
+            onPress={onNavigateProfile}
+        />
+
+        <NavItem
             icon="cart-outline"
             label="Cart"
             color={COLORS.navInactive}
@@ -62,10 +69,10 @@ const BottomNavBar = ({ onLogout, onNavigateProfile }) => (
         />
 
         <NavItem
-            icon="account-outline"
-            label="Profile"
+            icon="message-outline"
+            label="Support"
             color={COLORS.navInactive}
-            onPress={onNavigateProfile}
+            onPress={() => { }}
         />
 
         <NavItem
@@ -159,8 +166,8 @@ const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSear
                 <Text style={styles.headerTitle}>Stone Catalogue</Text>
             </View>
         )}
-        <TouchableOpacity 
-            style={styles.searchBtn} 
+        <TouchableOpacity
+            style={styles.searchBtn}
             activeOpacity={0.8}
             onPress={() => {
                 if (isSearchActive) {
@@ -171,10 +178,10 @@ const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSear
                 }
             }}
         >
-            <MaterialCommunityIcons 
-                name={isSearchActive ? "close" : "magnify"} 
-                size={22} 
-                color={COLORS.white} 
+            <MaterialCommunityIcons
+                name={isSearchActive ? "close" : "magnify"}
+                size={22}
+                color={COLORS.white}
             />
         </TouchableOpacity>
     </View>
@@ -227,11 +234,11 @@ const CustomerCatalogScreen = ({ navigation }) => {
         return (
             <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
                 <StatusBar barStyle="light-content" backgroundColor={COLORS.dark} />
-                <CatalogHeader 
-                    isSearchActive={isSearchActive} 
-                    setIsSearchActive={setIsSearchActive} 
-                    searchQuery={searchQuery} 
-                    setSearchQuery={setSearchQuery} 
+                <CatalogHeader
+                    isSearchActive={isSearchActive}
+                    setIsSearchActive={setIsSearchActive}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
                 />
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color={COLORS.teal} />
@@ -245,11 +252,11 @@ const CustomerCatalogScreen = ({ navigation }) => {
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="light-content" backgroundColor={COLORS.dark} />
 
-            <CatalogHeader 
-                isSearchActive={isSearchActive} 
-                setIsSearchActive={setIsSearchActive} 
-                searchQuery={searchQuery} 
-                setSearchQuery={setSearchQuery} 
+            <CatalogHeader
+                isSearchActive={isSearchActive}
+                setIsSearchActive={setIsSearchActive}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
             />
 
             <FlatList
@@ -268,8 +275,8 @@ const CustomerCatalogScreen = ({ navigation }) => {
                 }
             />
 
-            <BottomNavBar 
-                onLogout={handleLogout} 
+            <BottomNavBar
+                onLogout={handleLogout}
                 onNavigateProfile={() => navigation.navigate('Profile')}
             />
         </SafeAreaView>

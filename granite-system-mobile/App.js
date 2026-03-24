@@ -12,6 +12,7 @@ import AddProductScreen from './src/screens/AddProductScreen';
 import ProductManagementScreen from './src/screens/ProductManagementScreen';
 import EditProductScreen from './src/screens/EditProductScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import UserManagementScreen from './src/screens/UserManagementScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function App() {
           <Stack.Screen name="ProductManagement" component={ProductManagementScreen} options={{ headerShown: false }} />
           <Stack.Screen name="CustomerCatalog" component={CustomerCatalogScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="UserManagement" component={UserManagementScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
