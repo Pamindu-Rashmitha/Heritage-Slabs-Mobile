@@ -1,4 +1,5 @@
 const { body, validationResult } = require('express-validator');
+const Product = require('../models/Product');
 
 const validate = (req, res, next) => {
     const errors = validationResult(req);
@@ -38,11 +39,20 @@ const loginValidation = [
 ];
 
 const productValidation = [
-    body('stoneName').notEmpty().withMessage('Stone Name is required')
+    body('stoneName')
+        .trim()
+        .notEmpty().withMessage('Stone Name is required')
         .isString().withMessage('Stone name must be a text string')
+        .isLength({ min: 5 }).withMessage('Stone name must be at least 5 characters')
+        .isLength({ max: 20 }).withMessage('Stone name cannot exceed 20 characters')
+        .matches(/^[A-Za-z\s\-]+$/).withMessage('Stone name can only contain letters, spaces, and hyphens')
         .custom(notOnlyNumbers).withMessage('Stone name cannot contain only numbers'),
-    body('pricePerSqFt').isFloat({ min: 0 }).withMessage('Price per square foot must be a non-negative numeric value'),
-    body('stockInSqFt').isFloat({ min: 0 }).withMessage('Stock per square foot must be a non-negative numeric value')
+    body('pricePerSqFt')
+        .isFloat({ gt: 0 }).withMessage('Price per square foot must be greater than 0')
+        .isFloat({ max: 6000 }).withMessage('Price per square foot cannot exceed 6,000'),
+    body('stockInSqFt')
+        .isFloat({ min: 0 }).withMessage('Stock in square feet must be a non-negative value')
+        .isFloat({ max: 1000000 }).withMessage('Stock in square feet cannot exceed 1,000,000')
 ];
 
 const orderValidation = [

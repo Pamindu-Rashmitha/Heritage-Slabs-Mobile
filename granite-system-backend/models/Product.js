@@ -8,21 +8,26 @@ const productSchema = new mongoose.Schema({
     },
     stoneName: {
         type: String,
-        required: true,
+        required: [true, 'Stone name is required'],
+        trim: true,
+        minlength: [5, 'Stone name must be at least 5 characters'],
+        maxlength: [20, 'Stone name cannot exceed 20 characters'],
     },
     pricePerSqFt: {
         type: Number,
-        required: true,
+        required: [true, 'Price per square foot is required'],
+        min: [0, 'Price cannot be negative'],
     },
     stockInSqFt: {
         type: Number,
-        required: true,
+        required: [true, 'Stock in square feet is required'],
+        min: [0, 'Stock cannot be negative'],
     },
     imageUrl: {
         type: String,
         required: false
     }
-},{
+}, {
     timestamps: true
 });
 

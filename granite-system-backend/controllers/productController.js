@@ -1,13 +1,8 @@
 const Product = require('../models/Product');
 
 const createProduct = async (req, res) => {
-    try{
-        const {stoneName, pricePerSqFt, stockInSqFt} = req.body;
-
-        if(!stoneName || !pricePerSqFt || !stockInSqFt){
-            return res.status(400).json({message: 'Please add all required fields'});
-        }
-
+    try {
+        const { stoneName, pricePerSqFt, stockInSqFt } = req.body;
         const imagePath = req.file ? `/${req.file.path.replace(/\\/g, '/')}` : null;
 
         const product = await Product.create({
@@ -19,20 +14,23 @@ const createProduct = async (req, res) => {
         });
 
         res.status(201).json(product);
-    
-    } catch (error){
+
+    } catch (error) {
         console.error(error);
-        res.status(500).json({message:'Servor Error'})
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'A product with this stone name already exists' });
+        }
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
 const getProducts = async (req, res) => {
-    try{
+    try {
         const products = await Product.find({});
-        res.status(200).json({products});
-    } catch(error){
+        res.status(200).json({ products });
+    } catch (error) {
         console.error(error);
-        res.status(500).json({message:'Server Error'});
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
@@ -40,40 +38,50 @@ const updateProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
 
-        if(!product){
-            return res.status(404).json({message:'Product not found'});
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate (
+        // Only allow whitelisted fields to be updated
+        const allowedFields = ['stoneName', 'pricePerSqFt', 'stockInSqFt', 'imageUrl'];
+        const updateData = {};
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
-            req.body,
-            {new: true}
+            updateData,
+            { new: true, runValidators: true }
         );
 
         res.status(200).json(updatedProduct);
-    } catch(error) {
+    } catch (error) {
         console.error(error);
-        res.status(500).json({message:'Server Error'})
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'A product with this stone name already exists' });
+        }
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
 const deleteProduct = async (req, res) => {
-    try{
+    try {
         const product = await Product.findById(req.params.id);
 
-        if(!product){
-            return res.status(404).json({message:'Product not found'});
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
 
         await product.deleteOne();
-        res.status(200).json({id: req.params.id, message:'Product deleted'});
+        res.status(200).json({ id: req.params.id, message: 'Product deleted' });
 
-    } catch(error){
+    } catch (error) {
         console.error(error);
-        res.status(500).json({message:'Server Error'});
+        res.status(500).json({ message: 'Server Error' });
     }
 };
 
-
-
-module.exports = {createProduct, getProducts, updateProduct, deleteProduct};
+module.exports = { createProduct, getProducts, updateProduct, deleteProduct };
