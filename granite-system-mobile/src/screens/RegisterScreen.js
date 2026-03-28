@@ -22,6 +22,36 @@ const RegisterScreen = ({ navigation }) => {
             return;
         }
 
+        if (name.trim().length < 2) {
+            Alert.alert('Validation Error', 'Name must be at least 2 characters');
+            return;
+        }
+
+        if (/^\d+$/.test(name.trim())) {
+            Alert.alert('Validation Error', 'Name cannot contain only numbers');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            Alert.alert('Validation Error', 'Please enter a valid email address');
+            return;
+        }
+
+        if (password.length < 8) {
+            Alert.alert('Validation Error', 'Password must be at least 8 characters long');
+            return;
+        }
+
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+        if (!hasUpper || !hasLower || !hasNumber || !hasSymbol) {
+            Alert.alert('Validation Error', 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+            return;
+        }
+
         try {
             const response = await api.post('/auth/register', { name, email, password });
 
@@ -48,7 +78,8 @@ const RegisterScreen = ({ navigation }) => {
 
         } catch (error) {
             console.error(error);
-            Alert.alert('Registration Failed', error.response?.data?.message || 'Something went wrong');
+            const msg = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || 'Something went wrong';
+            Alert.alert('Registration Failed', msg);
         }
     };
 

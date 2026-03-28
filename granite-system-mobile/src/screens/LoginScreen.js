@@ -22,6 +22,12 @@ const LoginScreen = ({ navigation }) => {
             return;
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            Alert.alert('Validation Error', 'Please enter a valid email address');
+            return;
+        }
+
         try {
             // Send the POST request to /auth/login
             const response = await api.post('/auth/login', {
@@ -48,8 +54,8 @@ const LoginScreen = ({ navigation }) => {
 
         } catch (error) {
             console.error(error);
-            // Show the error message from your backend if it fails
-            Alert.alert('Login Failed', error.response?.data?.message || 'Something went wrong');
+            const msg = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || 'Something went wrong';
+            Alert.alert('Login Failed', msg);
         }
     };
 
