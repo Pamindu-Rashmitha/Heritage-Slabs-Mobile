@@ -13,6 +13,16 @@ import ProductManagementScreen from './src/screens/ProductManagementScreen';
 import EditProductScreen from './src/screens/EditProductScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import UserManagementScreen from './src/screens/UserManagementScreen';
+import OrderManagementScreen from './src/screens/OrderManagementScreen';
+import DeliveryManagementScreen from './src/screens/DeliveryManagementScreen';
+import VehicleManagementScreen from './src/screens/VehicleManagementScreen';
+import SupplierManagementScreen from './src/screens/SupplierManagementScreen';
+import TicketManagementScreen from './src/screens/TicketManagementScreen';
+import CartScreen from './src/screens/CartScreen';
+import MyOrdersScreen from './src/screens/MyOrdersScreen';
+import SubmitTicketScreen from './src/screens/SubmitTicketScreen';
+import MyTicketsScreen from './src/screens/MyTicketsScreen';
+import PurchaseOrderManagementScreen from './src/screens/PurchaseOrderManagementScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +40,16 @@ export default function App() {
           <Stack.Screen name="CustomerCatalog" component={CustomerCatalogScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
           <Stack.Screen name="UserManagement" component={UserManagementScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="OrderManagement" component={OrderManagementScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="DeliveryManagement" component={DeliveryManagementScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="VehicleManagement" component={VehicleManagementScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="SupplierManagement" component={SupplierManagementScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="TicketManagement" component={TicketManagementScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Cart" component={CartScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MyOrders" component={MyOrdersScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="SubmitTicket" component={SubmitTicketScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MyTickets" component={MyTicketsScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="PurchaseOrderManagement" component={PurchaseOrderManagementScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
