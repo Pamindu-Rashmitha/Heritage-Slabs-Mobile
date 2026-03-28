@@ -16,6 +16,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../api/axiosConfig';
+
+const addToCart = async (product) => {
+    try {
+        const cartData = await AsyncStorage.getItem('cart');
+        let cart = cartData ? JSON.parse(cartData) : [];
+        const exists = cart.find(i => i._id === product._id);
+        if (exists) {
+            cart = cart.map(i => i._id === product._id ? { ...i, qty: (i.qty || 1) + 1 } : i);
+            Alert.alert('Updated!', `${product.stoneName} quantity increased in cart.`);
+        } else {
+            cart.push({ ...product, qty: 1 });
+            Alert.alert('Added to Cart! 🛒', `${product.stoneName} has been added to your cart.`);
+        }
+        await AsyncStorage.setItem('cart', JSON.stringify(cart));
+    } catch (e) {
+        Alert.alert('Error', 'Could not add to cart.');
+    }
+};
 const SERVER_URL = 'http://192.168.1.8:5000';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -44,7 +62,7 @@ const NavItem = ({ icon, label, color, onPress }) => (
     </TouchableOpacity>
 );
 
-const BottomNavBar = ({ onLogout, onNavigateProfile }) => (
+const BottomNavBar = ({ onLogout, onNavigateProfile, onNavigateCart, onNavigateOrders, onNavigateSupport }) => (
     <View style={styles.bottomNav}>
 
         <NavItem
@@ -58,21 +76,21 @@ const BottomNavBar = ({ onLogout, onNavigateProfile }) => (
             icon="cart-outline"
             label="Cart"
             color={COLORS.navInactive}
-            onPress={() => { }}
+            onPress={onNavigateCart}
         />
 
         <NavItem
             icon="history"
             label="Orders"
             color={COLORS.navInactive}
-            onPress={() => { }}
+            onPress={onNavigateOrders}
         />
 
         <NavItem
             icon="message-outline"
-            label="Support"
+            label="My Tickets"
             color={COLORS.navInactive}
-            onPress={() => { }}
+            onPress={onNavigateSupport}
         />
 
         <NavItem
@@ -85,7 +103,7 @@ const BottomNavBar = ({ onLogout, onNavigateProfile }) => (
 );
 
 
-const SlabCard = ({ item }) => {
+const SlabCard = ({ item, onAddToCart }) => {
     const finalImageUrl = item.imageUrl
         ? `${SERVER_URL}${item.imageUrl}`
         : 'https://via.placeholder.com/800x600?text=No+Image';
@@ -123,24 +141,13 @@ const SlabCard = ({ item }) => {
 
                 {/* Action Buttons */}
                 <View style={styles.cardActions}>
-
                     <TouchableOpacity
                         style={styles.addCartBtn}
-                        onPress={() => { }}
+                        onPress={() => onAddToCart(item)}
                         activeOpacity={0.85}
                     >
                         <MaterialCommunityIcons name="cart-plus" size={16} color={COLORS.white} />
                         <Text style={styles.addCartText}>Add to Cart</Text>
-                    </TouchableOpacity>
-
-
-                    <TouchableOpacity
-                        style={styles.reviewBtn}
-                        onPress={() => { }}
-                        activeOpacity={0.85}
-                    >
-                        <MaterialCommunityIcons name="star-outline" size={16} color={COLORS.teal} />
-                        <Text style={styles.reviewText}>Review</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -262,7 +269,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
             <FlatList
                 data={filteredProducts}
                 keyExtractor={(item) => item._id}
-                renderItem={({ item }) => <SlabCard item={item} />}
+                renderItem={({ item }) => <SlabCard item={item} onAddToCart={addToCart} />}
                 contentContainerStyle={styles.listContent}
                 refreshing={refreshing}
                 onRefresh={() => fetchInventory(true)}
@@ -278,6 +285,9 @@ const CustomerCatalogScreen = ({ navigation }) => {
             <BottomNavBar
                 onLogout={handleLogout}
                 onNavigateProfile={() => navigation.navigate('Profile')}
+                onNavigateCart={() => navigation.navigate('Cart')}
+                onNavigateOrders={() => navigation.navigate('MyOrders')}
+                onNavigateSupport={() => navigation.navigate('MyTickets')}
             />
         </SafeAreaView>
     );
