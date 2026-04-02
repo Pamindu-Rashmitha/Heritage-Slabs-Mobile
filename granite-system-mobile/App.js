@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context'; 
 
@@ -26,30 +26,45 @@ import PurchaseOrderManagementScreen from './src/screens/PurchaseOrderManagement
 
 const Stack = createNativeStackNavigator();
 
+// Dark Glassmorphism navigation theme
+const DarkGlassTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#6366F1',
+    background: '#0F0F1E',
+    card: '#0F0F1E',
+    text: '#FFFFFF',
+    border: 'rgba(255,255,255,0.06)',
+    notification: '#A855F7',
+  },
+};
+
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="AddProduct" component={AddProductScreen} options={{ title: 'Add Product' }} />
-          <Stack.Screen name="EditProduct" component={EditProductScreen} options={{ title: 'Edit Product' }} />
-          <Stack.Screen name="ProductManagement" component={ProductManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="CustomerCatalog" component={CustomerCatalogScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="UserManagement" component={UserManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="OrderManagement" component={OrderManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="DeliveryManagement" component={DeliveryManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="VehicleManagement" component={VehicleManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="SupplierManagement" component={SupplierManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="TicketManagement" component={TicketManagementScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Cart" component={CartScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="MyOrders" component={MyOrdersScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="SubmitTicket" component={SubmitTicketScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="MyTickets" component={MyTicketsScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="PurchaseOrderManagement" component={PurchaseOrderManagementScreen} options={{ headerShown: false }} />
+      <NavigationContainer theme={DarkGlassTheme}>
+        <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F0F1E' }, animation: 'fade_from_bottom' }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+          <Stack.Screen name="AddProduct" component={AddProductScreen} />
+          <Stack.Screen name="EditProduct" component={EditProductScreen} />
+          <Stack.Screen name="ProductManagement" component={ProductManagementScreen} />
+          <Stack.Screen name="CustomerCatalog" component={CustomerCatalogScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="UserManagement" component={UserManagementScreen} />
+          <Stack.Screen name="OrderManagement" component={OrderManagementScreen} />
+          <Stack.Screen name="DeliveryManagement" component={DeliveryManagementScreen} />
+          <Stack.Screen name="VehicleManagement" component={VehicleManagementScreen} />
+          <Stack.Screen name="SupplierManagement" component={SupplierManagementScreen} />
+          <Stack.Screen name="TicketManagement" component={TicketManagementScreen} />
+          <Stack.Screen name="Cart" component={CartScreen} />
+          <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
+          <Stack.Screen name="SubmitTicket" component={SubmitTicketScreen} />
+          <Stack.Screen name="MyTickets" component={MyTicketsScreen} />
+          <Stack.Screen name="PurchaseOrderManagement" component={PurchaseOrderManagementScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

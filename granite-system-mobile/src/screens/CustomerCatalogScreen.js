@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    ActivityIndicator,
-    Alert,
-    TouchableOpacity,
-    Image,
-    StatusBar,
-    Dimensions,
-    TextInput
+    View, Text, StyleSheet, FlatList, ActivityIndicator, Alert,
+    TouchableOpacity, Image, StatusBar, Dimensions, TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../api/axiosConfig';
+import { THEME } from '../theme';
 
 const addToCart = async (product) => {
     try {
@@ -37,24 +29,6 @@ const addToCart = async (product) => {
 const SERVER_URL = 'http://192.168.1.8:5000';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-
-const COLORS = {
-    dark: '#1e2235',
-    teal: '#2a9d8f',
-    tealLight: '#e8f5f4',
-    amber: '#f4a261',
-    bg: '#f0f2f5',
-    white: '#ffffff',
-    textPrimary: '#1e2235',
-    textSub: '#6b7280',
-    border: '#e5e7eb',
-    navBg: '#ffffff',
-    navActive: '#2a9d8f',
-    navInactive: '#9ca3af',
-    danger: '#e63946',
-};
-
-
 const NavItem = ({ icon, label, color, onPress }) => (
     <TouchableOpacity style={styles.navItem} onPress={onPress} activeOpacity={0.7}>
         <MaterialCommunityIcons name={icon} size={24} color={color} />
@@ -64,44 +38,13 @@ const NavItem = ({ icon, label, color, onPress }) => (
 
 const BottomNavBar = ({ onLogout, onNavigateProfile, onNavigateCart, onNavigateOrders, onNavigateSupport }) => (
     <View style={styles.bottomNav}>
-
-        <NavItem
-            icon="account-outline"
-            label="Profile"
-            color={COLORS.navInactive}
-            onPress={onNavigateProfile}
-        />
-
-        <NavItem
-            icon="cart-outline"
-            label="Cart"
-            color={COLORS.navInactive}
-            onPress={onNavigateCart}
-        />
-
-        <NavItem
-            icon="history"
-            label="Orders"
-            color={COLORS.navInactive}
-            onPress={onNavigateOrders}
-        />
-
-        <NavItem
-            icon="message-outline"
-            label="My Tickets"
-            color={COLORS.navInactive}
-            onPress={onNavigateSupport}
-        />
-
-        <NavItem
-            icon="logout"
-            label="Logout"
-            color={COLORS.danger}
-            onPress={onLogout}
-        />
+        <NavItem icon="account-outline" label="Profile" color={THEME.navInactive} onPress={onNavigateProfile} />
+        <NavItem icon="cart-outline" label="Cart" color={THEME.navInactive} onPress={onNavigateCart} />
+        <NavItem icon="history" label="Orders" color={THEME.navInactive} onPress={onNavigateOrders} />
+        <NavItem icon="message-outline" label="My Tickets" color={THEME.navInactive} onPress={onNavigateSupport} />
+        <NavItem icon="logout" label="Logout" color={THEME.danger} onPress={onLogout} />
     </View>
 );
-
 
 const SlabCard = ({ item, onAddToCart }) => {
     const finalImageUrl = item.imageUrl
@@ -110,43 +53,24 @@ const SlabCard = ({ item, onAddToCart }) => {
 
     return (
         <View style={styles.card}>
-            {/* Slab Image */}
-            <Image
-                source={{ uri: finalImageUrl }}
-                style={styles.slabImage}
-                resizeMode="cover"
-            />
-
-            {/* Gradient-like overlay tag */}
+            <Image source={{ uri: finalImageUrl }} style={styles.slabImage} resizeMode="cover" />
             <View style={styles.categoryTag}>
                 <Text style={styles.categoryTagText}>Granite Slab</Text>
             </View>
-
-            {/* Card Content */}
             <View style={styles.cardContent}>
                 <Text style={styles.stoneName} numberOfLines={1}>{item.stoneName}</Text>
-
                 <View style={styles.metaRow}>
-                    {/* Stock */}
                     <View style={styles.metaChip}>
-                        <MaterialCommunityIcons name="layers-outline" size={13} color={COLORS.textSub} />
+                        <MaterialCommunityIcons name="layers-outline" size={13} color={THEME.textSecondary} />
                         <Text style={styles.metaChipText}>{item.stockInSqFt} SqFt</Text>
                     </View>
-
-                    {/* Price badge */}
                     <View style={styles.priceBadge}>
                         <Text style={styles.priceText}>LKR {item.pricePerSqFt}<Text style={styles.priceSub}>/SqFt</Text></Text>
                     </View>
                 </View>
-
-                {/* Action Buttons */}
                 <View style={styles.cardActions}>
-                    <TouchableOpacity
-                        style={styles.addCartBtn}
-                        onPress={() => onAddToCart(item)}
-                        activeOpacity={0.85}
-                    >
-                        <MaterialCommunityIcons name="cart-plus" size={16} color={COLORS.white} />
+                    <TouchableOpacity style={styles.addCartBtn} onPress={() => onAddToCart(item)} activeOpacity={0.85}>
+                        <MaterialCommunityIcons name="cart-plus" size={16} color="#fff" />
                         <Text style={styles.addCartText}>Add to Cart</Text>
                     </TouchableOpacity>
                 </View>
@@ -155,14 +79,13 @@ const SlabCard = ({ item, onAddToCart }) => {
     );
 };
 
-
 const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSearchQuery }) => (
     <View style={styles.header}>
         {isSearchActive ? (
             <TextInput
                 style={styles.searchInput}
                 placeholder="Search slabs..."
-                placeholderTextColor={COLORS.navInactive}
+                placeholderTextColor={THEME.textMuted}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoFocus
@@ -173,27 +96,15 @@ const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSear
                 <Text style={styles.headerTitle}>Stone Catalogue</Text>
             </View>
         )}
-        <TouchableOpacity
-            style={styles.searchBtn}
-            activeOpacity={0.8}
+        <TouchableOpacity style={styles.searchBtn} activeOpacity={0.8}
             onPress={() => {
-                if (isSearchActive) {
-                    setSearchQuery('');
-                    setIsSearchActive(false);
-                } else {
-                    setIsSearchActive(true);
-                }
-            }}
-        >
-            <MaterialCommunityIcons
-                name={isSearchActive ? "close" : "magnify"}
-                size={22}
-                color={COLORS.white}
-            />
+                if (isSearchActive) { setSearchQuery(''); setIsSearchActive(false); }
+                else { setIsSearchActive(true); }
+            }}>
+            <MaterialCommunityIcons name={isSearchActive ? "close" : "magnify"} size={22} color={THEME.textPrimary} />
         </TouchableOpacity>
     </View>
 );
-
 
 const CustomerCatalogScreen = ({ navigation }) => {
     const [products, setProducts] = useState([]);
@@ -202,24 +113,18 @@ const CustomerCatalogScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchActive, setIsSearchActive] = useState(false);
 
-    useEffect(() => {
-        fetchInventory();
-    }, []);
+    useEffect(() => { fetchInventory(); }, []);
 
     const handleLogout = async () => {
         try {
             await AsyncStorage.removeItem('userToken');
             await AsyncStorage.removeItem('userRole');
             navigation.replace('Login');
-        } catch (error) {
-            console.error('Error logging out:', error);
-        }
+        } catch (error) { console.error('Error logging out:', error); }
     };
 
     const fetchInventory = async (isRefresh = false) => {
-        if (isRefresh) setRefreshing(true);
-        else setLoading(true);
-
+        if (isRefresh) setRefreshing(true); else setLoading(true);
         try {
             const response = await api.get('/products');
             const data = response.data.products ?? response.data;
@@ -227,10 +132,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
         } catch (error) {
             console.error('Network/Backend Error:', error.response?.data || error.message);
             Alert.alert('Error', 'Failed to fetch inventory from the server.');
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
+        } finally { setLoading(false); setRefreshing(false); }
     };
 
     const filteredProducts = products.filter((product) =>
@@ -240,15 +142,10 @@ const CustomerCatalogScreen = ({ navigation }) => {
     if (loading) {
         return (
             <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-                <StatusBar barStyle="light-content" backgroundColor={COLORS.dark} />
-                <CatalogHeader
-                    isSearchActive={isSearchActive}
-                    setIsSearchActive={setIsSearchActive}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                />
+                <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
+                <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
                 <View style={styles.centered}>
-                    <ActivityIndicator size="large" color={COLORS.teal} />
+                    <ActivityIndicator size="large" color={THEME.indigo} />
                     <Text style={styles.loadingText}>Loading Catalogue…</Text>
                 </View>
             </SafeAreaView>
@@ -257,14 +154,10 @@ const CustomerCatalogScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-            <StatusBar barStyle="light-content" backgroundColor={COLORS.dark} />
+            <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
+            <View style={styles.blobTopRight} />
 
-            <CatalogHeader
-                isSearchActive={isSearchActive}
-                setIsSearchActive={setIsSearchActive}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-            />
+            <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
             <FlatList
                 data={filteredProducts}
@@ -276,7 +169,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <View style={styles.centered}>
-                        <MaterialCommunityIcons name="package-variant" size={64} color={COLORS.border} />
+                        <MaterialCommunityIcons name="package-variant" size={64} color={THEME.textMuted} />
                         <Text style={styles.emptyText}>No slabs available yet.</Text>
                     </View>
                 }
@@ -293,217 +186,55 @@ const CustomerCatalogScreen = ({ navigation }) => {
     );
 };
 
-
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.bg,
-    },
+    container: { flex: 1, backgroundColor: THEME.bg },
+    blobTopRight: { position: 'absolute', top: -40, right: -60, width: 200, height: 200, borderRadius: 100, backgroundColor: THEME.blobPurple },
 
-    // Header
     header: {
-        backgroundColor: COLORS.dark,
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: 24,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        borderBottomWidth: 1, borderBottomColor: THEME.border,
     },
-    headerEyebrow: {
-        fontSize: 11,
-        fontWeight: '700',
-        color: COLORS.teal,
-        letterSpacing: 2,
-        marginBottom: 2,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: '800',
-        color: COLORS.white,
-    },
-    searchBtn: {
-        backgroundColor: 'rgba(255,255,255,0.12)',
-        borderRadius: 12,
-        padding: 10,
-    },
-    searchInput: {
-        flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        color: COLORS.white,
-        fontSize: 16,
-        marginRight: 10,
-    },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 },
+    headerTitle: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary },
+    searchBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 10 },
+    searchInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, color: THEME.textPrimary, fontSize: 16, marginRight: 10, borderWidth: 1, borderColor: THEME.border },
 
-    // Loading
-    centered: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        marginTop: 12,
-        color: COLORS.textSub,
-        fontSize: 14,
-    },
-    emptyText: {
-        marginTop: 12,
-        color: COLORS.textSub,
-        fontSize: 15,
-    },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    loadingText: { marginTop: 12, color: THEME.textSecondary, fontSize: 14 },
+    emptyText: { marginTop: 12, color: THEME.textSecondary, fontSize: 15 },
 
-    // List
-    listContent: {
-        padding: 16,
-        paddingBottom: 20,
-    },
+    listContent: { padding: 16, paddingBottom: 20 },
 
-    // Product Card
     card: {
-        backgroundColor: COLORS.white,
-        borderRadius: 18,
-        marginBottom: 20,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.09,
-        shadowRadius: 10,
-        elevation: 5,
+        backgroundColor: THEME.bgCard,
+        borderRadius: 18, marginBottom: 20, overflow: 'hidden',
+        borderWidth: 1, borderColor: THEME.border,
     },
-    slabImage: {
-        width: '100%',
-        height: 200,
-        backgroundColor: COLORS.border,
-    },
-    categoryTag: {
-        position: 'absolute',
-        top: 14,
-        left: 14,
-        backgroundColor: 'rgba(30,34,53,0.72)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 20,
-    },
-    categoryTagText: {
-        color: COLORS.white,
-        fontSize: 11,
-        fontWeight: '600',
-        letterSpacing: 0.5,
-    },
-    cardContent: {
-        padding: 16,
-    },
-    stoneName: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: COLORS.textPrimary,
-        marginBottom: 10,
-    },
-    metaRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 14,
-    },
-    metaChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: COLORS.bg,
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 5,
-        gap: 4,
-    },
-    metaChipText: {
-        fontSize: 13,
-        color: COLORS.textSub,
-        fontWeight: '500',
-    },
-    priceBadge: {
-        backgroundColor: COLORS.tealLight,
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    priceText: {
-        fontSize: 15,
-        fontWeight: '800',
-        color: COLORS.teal,
-    },
-    priceSub: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: COLORS.teal,
-    },
+    slabImage: { width: '100%', height: 200, backgroundColor: 'rgba(255,255,255,0.04)' },
+    categoryTag: { position: 'absolute', top: 14, left: 14, backgroundColor: 'rgba(15,15,30,0.75)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: THEME.border },
+    categoryTagText: { color: THEME.textPrimary, fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
+    cardContent: { padding: 16 },
+    stoneName: { fontSize: 20, fontWeight: '800', color: THEME.textPrimary, marginBottom: 10 },
+    metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+    metaChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5, gap: 4 },
+    metaChipText: { fontSize: 13, color: THEME.textSecondary, fontWeight: '500' },
+    priceBadge: { backgroundColor: THEME.indigoLight, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+    priceText: { fontSize: 15, fontWeight: '800', color: THEME.indigo },
+    priceSub: { fontSize: 12, fontWeight: '500', color: THEME.indigo },
 
-    // Card action buttons
-    cardActions: {
-        flexDirection: 'row',
-        gap: 10,
-    },
-    addCartBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        backgroundColor: COLORS.teal,
-        borderRadius: 10,
-        paddingVertical: 11,
-    },
-    addCartText: {
-        color: COLORS.white,
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    reviewBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        borderWidth: 1.5,
-        borderColor: COLORS.teal,
-        borderRadius: 10,
-        paddingVertical: 11,
-        backgroundColor: COLORS.tealLight,
-    },
-    reviewText: {
-        color: COLORS.teal,
-        fontSize: 14,
-        fontWeight: '700',
-    },
+    cardActions: { flexDirection: 'row', gap: 10 },
+    addCartBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: THEME.indigo, borderRadius: 10, paddingVertical: 11, shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    addCartText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 
-    // Bottom Navigation Bar
     bottomNav: {
-        flexDirection: 'row',
-        backgroundColor: COLORS.navBg,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
-        borderTopWidth: 1,
-        borderTopColor: COLORS.border,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 12,
+        flexDirection: 'row', backgroundColor: THEME.navBg,
+        paddingVertical: 10, paddingHorizontal: 10,
+        borderTopWidth: 1, borderTopColor: THEME.border,
     },
-    navItem: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 3,
-        paddingVertical: 4,
-    },
-    navLabel: {
-        fontSize: 11,
-        fontWeight: '600',
-    },
+    navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, paddingVertical: 4 },
+    navLabel: { fontSize: 11, fontWeight: '600' },
 });
 
 export default CustomerCatalogScreen;

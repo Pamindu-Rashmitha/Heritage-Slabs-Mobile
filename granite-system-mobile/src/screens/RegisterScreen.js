@@ -5,11 +5,13 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    Alert
+    Alert,
+    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axiosConfig';
+import { THEME } from '../theme';
 
 const RegisterScreen = ({ navigation }) => {
     const [name, setName] = useState('');
@@ -59,14 +61,12 @@ const RegisterScreen = ({ navigation }) => {
             const role = response.data.role || 'customer';
             const userId = response.data._id;
 
-            // If the backend didn't send a token, send them to Login
             if (!token) {
                 Alert.alert('Account Created!', 'Please log in with your new credentials.');
                 navigation.replace('Login');
                 return;
             }
 
-            // If token exists, proceed as normal
             await AsyncStorage.setItem('userToken', token);
             await AsyncStorage.setItem('userRole', role);
             if (userId) {
@@ -85,6 +85,12 @@ const RegisterScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
+
+            {/* Decorative blobs */}
+            <View style={styles.blobTopRight} />
+            <View style={styles.blobBottomLeft} />
+
             <View style={styles.formContainer}>
                 <Text style={styles.title}>Create Account</Text>
                 <Text style={styles.subtitle}>Join to view premium granite slabs</Text>
@@ -92,6 +98,7 @@ const RegisterScreen = ({ navigation }) => {
                 <TextInput
                     style={styles.input}
                     placeholder="Full Name"
+                    placeholderTextColor={THEME.textMuted}
                     value={name}
                     onChangeText={setName}
                 />
@@ -99,6 +106,7 @@ const RegisterScreen = ({ navigation }) => {
                 <TextInput
                     style={styles.input}
                     placeholder="Email Address"
+                    placeholderTextColor={THEME.textMuted}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -108,6 +116,7 @@ const RegisterScreen = ({ navigation }) => {
                 <TextInput
                     style={styles.input}
                     placeholder="Password"
+                    placeholderTextColor={THEME.textMuted}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry
@@ -117,12 +126,13 @@ const RegisterScreen = ({ navigation }) => {
                     <Text style={styles.buttonText}>Sign Up</Text>
                 </TouchableOpacity>
 
-                {/* A link to go back to the Login screen if they already have an account */}
                 <TouchableOpacity
                     style={styles.linkButton}
                     onPress={() => navigation.navigate('Login')}
                 >
-                    <Text style={styles.linkText}>Already have an account? Log In</Text>
+                    <Text style={styles.linkText}>
+                        Already have an account? <Text style={{ color: THEME.purple }}>Log In</Text>
+                    </Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -130,15 +140,17 @@ const RegisterScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f4f4f4', justifyContent: 'center' },
+    container: { flex: 1, backgroundColor: THEME.bg, justifyContent: 'center' },
+    blobTopRight: { position: 'absolute', top: -60, right: -60, width: 220, height: 220, borderRadius: 110, backgroundColor: THEME.blobPurple },
+    blobBottomLeft: { position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: 130, backgroundColor: THEME.blobIndigo },
     formContainer: { paddingHorizontal: 30 },
-    title: { fontSize: 32, fontWeight: 'bold', color: '#333', marginBottom: 5, textAlign: 'center' },
-    subtitle: { fontSize: 16, color: '#666', marginBottom: 40, textAlign: 'center' },
-    input: { backgroundColor: '#fff', paddingVertical: 15, paddingHorizontal: 20, borderRadius: 10, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: '#ddd' },
-    button: { backgroundColor: '#2a9d8f', paddingVertical: 15, borderRadius: 10, marginTop: 10, alignItems: 'center' },
-    buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+    title: { fontSize: 34, fontWeight: '800', color: THEME.textPrimary, marginBottom: 6, textAlign: 'center', letterSpacing: 0.5 },
+    subtitle: { fontSize: 16, color: THEME.textSecondary, marginBottom: 40, textAlign: 'center' },
+    input: { backgroundColor: THEME.bgInput, paddingVertical: 15, paddingHorizontal: 20, borderRadius: 12, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
+    button: { backgroundColor: THEME.purple, paddingVertical: 15, borderRadius: 12, marginTop: 10, alignItems: 'center', shadowColor: THEME.purple, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+    buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
     linkButton: { marginTop: 20, alignItems: 'center' },
-    linkText: { color: '#2b2d42', fontSize: 16, fontWeight: '600' }
+    linkText: { color: THEME.textSecondary, fontSize: 15, fontWeight: '600' },
 });
 
 export default RegisterScreen;
