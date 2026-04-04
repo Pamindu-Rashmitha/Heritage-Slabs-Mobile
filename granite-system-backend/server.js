@@ -21,6 +21,7 @@ app.use('/api/vehicles', require('./routes/vehicleRoutes'));
 app.use('/api/suppliers', require('./routes/supplierRoutes'));
 app.use('/api/tickets', require('./routes/ticketRoutes'));
 app.use('/api/purchase-orders', require('./routes/purchaseOrderRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 
 // Connect to MongoDB

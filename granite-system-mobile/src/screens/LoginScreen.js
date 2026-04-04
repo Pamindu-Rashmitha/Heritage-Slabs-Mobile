@@ -11,11 +11,13 @@ import {
     StatusBar,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../theme';
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -80,14 +82,26 @@ const LoginScreen = ({ navigation }) => {
                     autoCapitalize="none"
                 />
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor={THEME.textMuted}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Password"
+                        placeholderTextColor={THEME.textMuted}
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeIcon} 
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        <MaterialCommunityIcons 
+                            name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                            size={22} 
+                            color={THEME.textMuted} 
+                        />
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                     <Text style={styles.buttonText}>Login</Text>
@@ -156,6 +170,27 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: THEME.border,
         color: THEME.textPrimary,
+    },
+    passwordContainer: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        backgroundColor: THEME.bgInput, 
+        borderRadius: 12, 
+        marginBottom: 15, 
+        borderWidth: 1, 
+        borderColor: THEME.border 
+    },
+    passwordInput: { 
+        flex: 1, 
+        paddingVertical: 15, 
+        paddingHorizontal: 20, 
+        fontSize: 16, 
+        color: THEME.textPrimary 
+    },
+    eyeIcon: { 
+        paddingHorizontal: 15, 
+        justifyContent: 'center', 
+        alignItems: 'center' 
     },
     button: {
         backgroundColor: THEME.indigo,

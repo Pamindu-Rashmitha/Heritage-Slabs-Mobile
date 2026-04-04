@@ -11,16 +11,25 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axiosConfig';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../theme';
 
 const RegisterScreen = ({ navigation }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleRegister = async () => {
-        if (!name || !email || !password) {
+        if (!name || !email || !password || !confirmPassword) {
             Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            Alert.alert('Validation Error', 'Passwords do not match');
             return;
         }
 
@@ -113,14 +122,47 @@ const RegisterScreen = ({ navigation }) => {
                     autoCapitalize="none"
                 />
 
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor={THEME.textMuted}
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Password"
+                        placeholderTextColor={THEME.textMuted}
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeIcon} 
+                        onPress={() => setShowPassword(!showPassword)}
+                    >
+                        <MaterialCommunityIcons 
+                            name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                            size={22} 
+                            color={THEME.textMuted} 
+                        />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Confirm Password"
+                        placeholderTextColor={THEME.textMuted}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        secureTextEntry={!showConfirmPassword}
+                    />
+                    <TouchableOpacity 
+                        style={styles.eyeIcon} 
+                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                        <MaterialCommunityIcons 
+                            name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} 
+                            size={22} 
+                            color={THEME.textMuted} 
+                        />
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity style={styles.button} onPress={handleRegister}>
                     <Text style={styles.buttonText}>Sign Up</Text>
@@ -147,6 +189,9 @@ const styles = StyleSheet.create({
     title: { fontSize: 34, fontWeight: '800', color: THEME.textPrimary, marginBottom: 6, textAlign: 'center', letterSpacing: 0.5 },
     subtitle: { fontSize: 16, color: THEME.textSecondary, marginBottom: 40, textAlign: 'center' },
     input: { backgroundColor: THEME.bgInput, paddingVertical: 15, paddingHorizontal: 20, borderRadius: 12, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
+    passwordContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.bgInput, borderRadius: 12, marginBottom: 15, borderWidth: 1, borderColor: THEME.border },
+    passwordInput: { flex: 1, paddingVertical: 15, paddingHorizontal: 20, fontSize: 16, color: THEME.textPrimary },
+    eyeIcon: { paddingHorizontal: 15, justifyContent: 'center', alignItems: 'center' },
     button: { backgroundColor: THEME.purple, paddingVertical: 15, borderRadius: 12, marginTop: 10, alignItems: 'center', shadowColor: THEME.purple, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
     linkButton: { marginTop: 20, alignItems: 'center' },

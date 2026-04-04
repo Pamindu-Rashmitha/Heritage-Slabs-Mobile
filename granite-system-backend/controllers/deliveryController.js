@@ -119,7 +119,14 @@ const updateDelivery = async (req, res) => {
 
         if (status && status !== oldStatus) {
             if (status === 'Completed') {
-                await Order.findByIdAndUpdate(delivery.order, { status: 'Delivered' });
+                const order = await Order.findById(delivery.order);
+                if (order) {
+                    order.status = 'Delivered';
+                    if (order.paymentMethod === 'Cash on Delivery') {
+                        order.paymentStatus = 'Paid';
+                    }
+                    await order.save();
+                }
                 await Vehicle.findByIdAndUpdate(delivery.vehicle, { status: 'Available' });
             } else if (status === 'In Transit') {
                 await Order.findByIdAndUpdate(delivery.order, { status: 'Shipped' });

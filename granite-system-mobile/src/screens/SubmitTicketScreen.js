@@ -15,13 +15,14 @@ const SubmitTicketScreen = ({ navigation, route }) => {
     const [subject, setSubject] = useState(''); const [description, setDescription] = useState('');
     const [type, setType] = useState(presetType); const [submitting, setSubmitting] = useState(false);
     const [typePickerVisible, setTypePickerVisible] = useState(false); const [orderPickerVisible, setOrderPickerVisible] = useState(false);
+    const [rating, setRating] = useState(5);
     const [orders, setOrders] = useState([]); const [selectedOrder, setSelectedOrder] = useState(presetOrderId); const [loadingOrders, setLoadingOrders] = useState(false);
 
     useFocusEffect(useCallback(() => { fetchMyOrders(); }, []));
     const fetchMyOrders = async () => { setLoadingOrders(true); try { const token = await AsyncStorage.getItem('userToken'); const res = await api.get('/orders/my', { headers: { Authorization: `Bearer ${token}` } }); setOrders(res.data.orders ?? res.data ?? []); } catch (e) { setOrders([]); } finally { setLoadingOrders(false); } };
     const getOrderLabel = (orderId) => { const o = orders.find(o => o._id === orderId); if (!o) return 'Select an order...'; const date = new Date(o.createdAt).toLocaleDateString(); return `#${o._id.slice(-6).toUpperCase()} — LKR ${o.totalPrice?.toLocaleString()} (${date})`; };
     const validateForm = () => { if (!selectedOrder) { Alert.alert('Validation Error', 'Please select an order.'); return false; } if (!subject.trim()) { Alert.alert('Validation Error', 'Subject is required.'); return false; } if (subject.trim().length < 3) { Alert.alert('Validation Error', 'Subject must be at least 3 characters.'); return false; } if (/^\d+$/.test(subject.trim())) { Alert.alert('Validation Error', 'Subject cannot contain only numbers.'); return false; } if (!description.trim()) { Alert.alert('Validation Error', 'Description is required.'); return false; } if (description.trim().length < 10) { Alert.alert('Validation Error', 'Description must be at least 10 characters.'); return false; } return true; };
-    const handleSubmit = async () => { if (!validateForm()) return; setSubmitting(true); try { const token = await AsyncStorage.getItem('userToken'); const userId = await AsyncStorage.getItem('userId'); if (!userId) { Alert.alert('Error', 'Please log in again.'); navigation.replace('Login'); return; } await api.post('/tickets', { user: userId, order: selectedOrder, subject: subject.trim(), description: description.trim(), type }, { headers: { Authorization: `Bearer ${token}` } }); Alert.alert('Submitted!', type === 'Review' ? 'Thank you for your review!' : 'Your support ticket has been submitted. We\'ll get back to you soon.', [{ text: 'OK', onPress: () => navigation.goBack() }]); } catch (e) { Alert.alert('Error', e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || 'Could not submit. Please try again.'); } finally { setSubmitting(false); } };
+    const handleSubmit = async () => { if (!validateForm()) return; setSubmitting(true); try { const token = await AsyncStorage.getItem('userToken'); const userId = await AsyncStorage.getItem('userId'); if (!userId) { Alert.alert('Error', 'Please log in again.'); navigation.replace('Login'); return; } if (type === 'Review') { await api.post('/products/review-order', { orderId: selectedOrder, subject: subject.trim(), description: description.trim(), rating }, { headers: { Authorization: `Bearer ${token}` } }); } else { await api.post('/tickets', { user: userId, order: selectedOrder, subject: subject.trim(), description: description.trim(), type }, { headers: { Authorization: `Bearer ${token}` } }); } Alert.alert('Submitted!', type === 'Review' ? 'Thank you for your review!' : 'Your support ticket has been submitted. We\'ll get back to you soon.', [{ text: 'OK', onPress: () => navigation.goBack() }]); } catch (e) { Alert.alert('Error', e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || 'Could not submit. Please try again.'); } finally { setSubmitting(false); } };
 
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
@@ -31,6 +32,18 @@ const SubmitTicketScreen = ({ navigation, route }) => {
                 <TouchableOpacity style={st.input} onPress={() => setTypePickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name={type === 'Review' ? 'star-outline' : 'headset'} size={20} color={THEME.indigo} /><Text style={{ fontSize: 15, color: THEME.textPrimary }}>{type}</Text></View></TouchableOpacity>
                 <Text style={st.label}>Related Order *</Text>
                 <TouchableOpacity style={st.input} onPress={() => setOrderPickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name="clipboard-list-outline" size={20} color={selectedOrder ? THEME.indigo : THEME.textMuted} /><Text style={{ fontSize: 14, color: selectedOrder ? THEME.textPrimary : THEME.textMuted, flex: 1 }} numberOfLines={1}>{getOrderLabel(selectedOrder)}</Text></View></TouchableOpacity>
+                {type === 'Review' && (
+                    <View>
+                        <Text style={st.label}>Rating</Text>
+                        <View style={{flexDirection: 'row', gap: 8, marginTop: 4, marginBottom: 8}}>
+                            {[1,2,3,4,5].map(star => (
+                                <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                                    <MaterialCommunityIcons name="star" size={32} color={star <= rating ? "#FFD700" : "rgba(255,255,255,0.2)"} />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                )}
                 <Text style={st.label}>Subject</Text>
                 <TextInput style={st.input} placeholder={type === 'Review' ? 'e.g. Great quality granite!' : 'e.g. Issue with my order'} placeholderTextColor={THEME.textMuted} value={subject} onChangeText={setSubject} />
                 <Text style={st.label}>Description</Text>

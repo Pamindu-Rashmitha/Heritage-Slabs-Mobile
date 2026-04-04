@@ -23,10 +23,24 @@ const productSchema = new mongoose.Schema({
         required: [true, 'Stock in square feet is required'],
         min: [0, 'Stock cannot be negative'],
     },
-    imageUrl: {
-        type: String,
-        required: false
-    }
+    imageUrls: {
+        type: [String],
+        default: []
+    },
+    rating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+    },
+    reviews: [
+        {
+            user: { type: String, required: true },
+            text: { type: String, required: true },
+            rating: { type: Number, required: true },
+            createdAt: { type: Date, default: Date.now }
+        }
+    ]
 }, {
     timestamps: true
 });

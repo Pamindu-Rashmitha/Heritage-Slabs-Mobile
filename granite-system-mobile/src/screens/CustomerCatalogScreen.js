@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     View, Text, StyleSheet, FlatList, ActivityIndicator, Alert,
-    TouchableOpacity, Image, StatusBar, Dimensions, TextInput
+    TouchableOpacity, Image, StatusBar, Dimensions, TextInput, Modal, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,9 +36,9 @@ const NavItem = ({ icon, label, color, onPress }) => (
     </TouchableOpacity>
 );
 
-const BottomNavBar = ({ onLogout, onNavigateProfile, onNavigateCart, onNavigateOrders, onNavigateSupport }) => (
+const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateOrders, onNavigateSupport }) => (
     <View style={styles.bottomNav}>
-        <NavItem icon="account-outline" label="Profile" color={THEME.navInactive} onPress={onNavigateProfile} />
+        <NavItem icon="home-outline" label="Catalog" color={THEME.indigo} onPress={onNavigateCatalog} />
         <NavItem icon="cart-outline" label="Cart" color={THEME.navInactive} onPress={onNavigateCart} />
         <NavItem icon="history" label="Orders" color={THEME.navInactive} onPress={onNavigateOrders} />
         <NavItem icon="message-outline" label="My Tickets" color={THEME.navInactive} onPress={onNavigateSupport} />
@@ -46,19 +46,34 @@ const BottomNavBar = ({ onLogout, onNavigateProfile, onNavigateCart, onNavigateO
     </View>
 );
 
-const SlabCard = ({ item, onAddToCart }) => {
-    const finalImageUrl = item.imageUrl
-        ? `${SERVER_URL}${item.imageUrl}`
+const SlabCard = ({ item, onAddToCart, onPress }) => {
+    const images = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
+    const finalImageUrl = images.length > 0
+        ? `${SERVER_URL}${images[0]}`
         : 'https://via.placeholder.com/800x600?text=No+Image';
 
+    const renderStars = (rating = 0) => {
+        return (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <MaterialCommunityIcons name="star" size={16} color="#FFD700" />
+                <Text style={{ color: THEME.textPrimary, marginLeft: 4, fontWeight: '700', fontSize: 13 }}>
+                    {rating > 0 ? rating.toFixed(1) : 'No rating'}
+                </Text>
+            </View>
+        );
+    };
+
     return (
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => onPress && onPress(item)} activeOpacity={0.9}>
             <Image source={{ uri: finalImageUrl }} style={styles.slabImage} resizeMode="cover" />
             <View style={styles.categoryTag}>
                 <Text style={styles.categoryTagText}>Granite Slab</Text>
             </View>
             <View style={styles.cardContent}>
-                <Text style={styles.stoneName} numberOfLines={1}>{item.stoneName}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                    <Text style={[styles.stoneName, { marginBottom: 0, flex: 1 }]} numberOfLines={1}>{item.stoneName}</Text>
+                    {renderStars(item.rating)}
+                </View>
                 <View style={styles.metaRow}>
                     <View style={styles.metaChip}>
                         <MaterialCommunityIcons name="layers-outline" size={13} color={THEME.textSecondary} />
@@ -75,11 +90,11 @@ const SlabCard = ({ item, onAddToCart }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
-const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSearchQuery }) => (
+const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSearchQuery, onNavigateProfile }) => (
     <View style={styles.header}>
         {isSearchActive ? (
             <TextInput
@@ -96,13 +111,18 @@ const CatalogHeader = ({ isSearchActive, setIsSearchActive, searchQuery, setSear
                 <Text style={styles.headerTitle}>Stone Catalogue</Text>
             </View>
         )}
-        <TouchableOpacity style={styles.searchBtn} activeOpacity={0.8}
-            onPress={() => {
-                if (isSearchActive) { setSearchQuery(''); setIsSearchActive(false); }
-                else { setIsSearchActive(true); }
-            }}>
-            <MaterialCommunityIcons name={isSearchActive ? "close" : "magnify"} size={22} color={THEME.textPrimary} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <TouchableOpacity style={styles.searchBtn} activeOpacity={0.8}
+                onPress={() => {
+                    if (isSearchActive) { setSearchQuery(''); setIsSearchActive(false); }
+                    else { setIsSearchActive(true); }
+                }}>
+                <MaterialCommunityIcons name={isSearchActive ? "close" : "magnify"} size={22} color={THEME.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.searchBtn} activeOpacity={0.8} onPress={onNavigateProfile}>
+                <MaterialCommunityIcons name="account-outline" size={22} color={THEME.textPrimary} />
+            </TouchableOpacity>
+        </View>
     </View>
 );
 
@@ -112,6 +132,8 @@ const CustomerCatalogScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchActive, setIsSearchActive] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => { fetchInventory(); }, []);
 
@@ -143,7 +165,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
         return (
             <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
                 <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
-                <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+                <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onNavigateProfile={() => navigation.navigate('Profile')} />
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color={THEME.indigo} />
                     <Text style={styles.loadingText}>Loading Catalogue…</Text>
@@ -157,12 +179,12 @@ const CustomerCatalogScreen = ({ navigation }) => {
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={styles.blobTopRight} />
 
-            <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+            <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onNavigateProfile={() => navigation.navigate('Profile')} />
 
             <FlatList
                 data={filteredProducts}
                 keyExtractor={(item) => item._id}
-                renderItem={({ item }) => <SlabCard item={item} onAddToCart={addToCart} />}
+                renderItem={({ item }) => <SlabCard item={item} onAddToCart={addToCart} onPress={(prod) => { setSelectedProduct(prod); setModalVisible(true); }} />}
                 contentContainerStyle={styles.listContent}
                 refreshing={refreshing}
                 onRefresh={() => fetchInventory(true)}
@@ -177,11 +199,109 @@ const CustomerCatalogScreen = ({ navigation }) => {
 
             <BottomNavBar
                 onLogout={handleLogout}
-                onNavigateProfile={() => navigation.navigate('Profile')}
+                onNavigateCatalog={() => {}}
                 onNavigateCart={() => navigation.navigate('Cart')}
                 onNavigateOrders={() => navigation.navigate('MyOrders')}
                 onNavigateSupport={() => navigation.navigate('MyTickets')}
             />
+
+            {/* Product Details Modal */}
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={modalVisible}
+                onRequestClose={() => { setModalVisible(false); setSelectedProduct(null); }}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        {selectedProduct && (
+                            <ScrollView showsVerticalScrollIndicator={false}>
+                                <View>
+                                    <ScrollView
+                                        horizontal
+                                        pagingEnabled
+                                        showsHorizontalScrollIndicator={false}
+                                        style={styles.modalCarousel}
+                                    >
+                                        {(selectedProduct.imageUrls && selectedProduct.imageUrls.length > 0 
+                                            ? selectedProduct.imageUrls 
+                                            : (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : [])
+                                        ).map((img, index) => (
+                                            <Image
+                                                key={index}
+                                                source={{ uri: `${SERVER_URL}${img}` }}
+                                                style={styles.modalImage}
+                                                resizeMode="cover"
+                                            />
+                                        ))}
+                                        {(!selectedProduct.imageUrls || selectedProduct.imageUrls.length === 0) && !selectedProduct.imageUrl && (
+                                            <Image
+                                                source={{ uri: 'https://via.placeholder.com/800x600?text=No+Image' }}
+                                                style={styles.modalImage}
+                                                resizeMode="cover"
+                                            />
+                                        )}
+                                    </ScrollView>
+                                    <View style={styles.carouselBadge}>
+                                        <MaterialCommunityIcons name="image-multiple" size={12} color="#fff" />
+                                        <Text style={styles.carouselBadgeText}>
+                                            {(selectedProduct.imageUrls?.length || (selectedProduct.imageUrl ? 1 : 0))} Photos
+                                        </Text>
+                                    </View>
+                                </View>
+                                <TouchableOpacity style={styles.closeModalBtn} onPress={() => { setModalVisible(false); setSelectedProduct(null); }}>
+                                    <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                                </TouchableOpacity>
+
+                                <View style={styles.modalBody}>
+                                    <View style={styles.modalHeaderRow}>
+                                        <Text style={styles.modalTitle}>{selectedProduct.stoneName}</Text>
+                                        <View style={styles.modalRating}>
+                                            <MaterialCommunityIcons name="star" size={20} color="#FFD700" />
+                                            <Text style={styles.modalRatingText}>
+                                                {selectedProduct.rating > 0 ? selectedProduct.rating.toFixed(1) : 'N/A'}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <Text style={styles.modalPrice}>LKR {selectedProduct.pricePerSqFt}<Text style={styles.modalPriceSub}>/SqFt</Text></Text>
+                                    <Text style={styles.modalStock}>Available Stock: {selectedProduct.stockInSqFt} SqFt</Text>
+
+                                    <View style={styles.reviewsSection}>
+                                        <Text style={styles.reviewsTitle}>Customer Reviews</Text>
+                                        {(!selectedProduct.reviews || selectedProduct.reviews.length === 0) ? (
+                                            <Text style={styles.noReviewsText}>No reviews yet for this slab.</Text>
+                                        ) : (
+                                            selectedProduct.reviews.map((r, idx) => (
+                                                <View key={idx} style={styles.reviewCard}>
+                                                    <View style={styles.reviewHeader}>
+                                                        <Text style={styles.reviewUser}>{r.user}</Text>
+                                                        <View style={{ flexDirection: 'row' }}>
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <MaterialCommunityIcons key={i} name="star" size={14} color={i < r.rating ? "#FFD700" : THEME.border} />
+                                                            ))}
+                                                        </View>
+                                                    </View>
+                                                    <Text style={styles.reviewText}>{r.text}</Text>
+                                                    <Text style={styles.reviewDate}>{new Date(r.createdAt || Date.now()).toLocaleDateString()}</Text>
+                                                </View>
+                                            ))
+                                        )}
+                                    </View>
+                                </View>
+                            </ScrollView>
+                        )}
+                        {selectedProduct && (
+                            <View style={styles.modalFooter}>
+                                <TouchableOpacity style={styles.modalAddCartBtn} onPress={() => { addToCart(selectedProduct); setModalVisible(false); }}>
+                                    <MaterialCommunityIcons name="cart-plus" size={20} color="#fff" />
+                                    <Text style={styles.modalAddCartText}>Add to Cart</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -235,6 +355,34 @@ const styles = StyleSheet.create({
     },
     navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, paddingVertical: 4 },
     navLabel: { fontSize: 11, fontWeight: '600' },
+
+    // Modal Styles
+    modalOverlay: { flex: 1, backgroundColor: THEME.bg },
+    modalContent: { flex: 1, backgroundColor: THEME.bgCard, borderWidth: 0, borderColor: THEME.border },
+    modalCarousel: { height: 300 },
+    modalImage: { width: SCREEN_WIDTH, height: 300 },
+    carouselBadge: { position: 'absolute', bottom: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 6 },
+    carouselBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+    closeModalBtn: { position: 'absolute', top: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: 6 },
+    modalBody: { padding: 20 },
+    modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    modalTitle: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary, flex: 1 },
+    modalRating: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+    modalRatingText: { color: THEME.textPrimary, marginLeft: 6, fontWeight: '700', fontSize: 14 },
+    modalPrice: { fontSize: 20, fontWeight: '800', color: THEME.indigo, marginBottom: 4 },
+    modalPriceSub: { fontSize: 14, fontWeight: '500', color: THEME.indigo },
+    modalStock: { fontSize: 14, color: THEME.textSecondary, marginBottom: 24 },
+    reviewsSection: { borderTopWidth: 1, borderTopColor: THEME.border, paddingTop: 20, paddingBottom: 20 },
+    reviewsTitle: { fontSize: 18, fontWeight: '700', color: THEME.textPrimary, marginBottom: 16 },
+    noReviewsText: { color: THEME.textSecondary, fontStyle: 'italic', fontSize: 14 },
+    reviewCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: THEME.border },
+    reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    reviewUser: { color: THEME.textPrimary, fontWeight: '600', fontSize: 14 },
+    reviewText: { color: THEME.textSecondary, fontSize: 14, lineHeight: 20, marginBottom: 8 },
+    reviewDate: { color: THEME.textMuted, fontSize: 11, textAlign: 'right' },
+    modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: THEME.border, backgroundColor: THEME.bgCard },
+    modalAddCartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: THEME.indigo, borderRadius: 12, paddingVertical: 14, shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    modalAddCartText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default CustomerCatalogScreen;

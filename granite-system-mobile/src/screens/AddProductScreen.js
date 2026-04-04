@@ -9,7 +9,7 @@ const AddProductScreen = ({ navigation }) => {
     const [stoneName, setStoneName] = useState('');
     const [stock, setStock] = useState('');
     const [price, setPrice] = useState('');
-    const [imageUri, setImageUri] = useState(null);
+    const [imageUris, setImageUris] = useState([]);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -28,7 +28,7 @@ const AddProductScreen = ({ navigation }) => {
         if (!stock) { newErrors.stock = 'Stock in square feet is required'; }
         else if (isNaN(stockNum) || stockNum < 0) { newErrors.stock = 'Stock must be a non-negative value'; }
         else if (stockNum > 1000000) { newErrors.stock = 'Stock cannot exceed 1,000,000'; }
-        if (!imageUri) { newErrors.image = 'Please select a product image'; }
+        if (imageUris.length === 0) { newErrors.image = 'Please select at least one product image'; }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -36,8 +36,17 @@ const AddProductScreen = ({ navigation }) => {
     const pickImage = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (permissionResult.granted === false) { Alert.alert('Permission Required', 'We need access to your photos to upload a slab.'); return; }
-        const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [4, 3], quality: 0.8 });
-        if (!result.canceled) { setImageUri(result.assets[0].uri); setErrors(prev => ({ ...prev, image: undefined })); }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            selectionLimit: 5,
+            quality: 0.8
+        });
+        if (!result.canceled) {
+            const selectedUris = result.assets.map(asset => asset.uri);
+            setImageUris(selectedUris);
+            setErrors(prev => ({ ...prev, image: undefined }));
+        }
     };
 
     const handleAddProduct = async () => {
@@ -49,11 +58,20 @@ const AddProductScreen = ({ navigation }) => {
             formData.append('stoneName', stoneName.trim());
             formData.append('stockInSqFt', stock);
             formData.append('pricePerSqFt', price);
-            const filename = imageUri.split('/').pop();
-            const match = /\.(\w+)$/.exec(filename);
-            const type = match ? `image/${match[1]}` : `image`;
-            formData.append('image', { uri: imageUri, name: filename, type: type });
-            await api.post('/products', formData, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } });
+
+            imageUris.forEach((uri, index) => {
+                const filename = uri.split('/').pop();
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : `image`;
+                formData.append('images', { uri, name: filename, type: type });
+            });
+
+            await api.post('/products', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`
+                }
+            });
             Alert.alert('Success!', 'New Granite Slab added to inventory.');
             navigation.goBack();
         } catch (error) {
@@ -71,14 +89,23 @@ const AddProductScreen = ({ navigation }) => {
         <ScrollView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={styles.form}>
-                <Text style={styles.title}>Add New Slab</Text>
+                <View style={styles.headerRow}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.textPrimary} />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Add New Slab</Text>
+                </View>
                 <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-                    {imageUri ? (
-                        <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                    {imageUris.length > 0 ? (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageGrid}>
+                            {imageUris.map((uri, index) => (
+                                <Image key={index} source={{ uri }} style={styles.imagePreviewSmall} />
+                            ))}
+                        </ScrollView>
                     ) : (
                         <View style={styles.imagePickerInner}>
                             <MaterialCommunityIcons name="camera-plus-outline" size={32} color={THEME.textMuted} />
-                            <Text style={styles.imagePickerText}>Tap to Select Photo</Text>
+                            <Text style={styles.imagePickerText}>Tap to Select Photos (Max 5)</Text>
                         </View>
                     )}
                 </TouchableOpacity>
@@ -108,11 +135,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
-    form: { padding: 30 },
-    title: { fontSize: 28, fontWeight: '800', color: THEME.textPrimary, marginBottom: 20 },
+    form: { padding: 25 },
+    headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 25, gap: 12 },
+    backButton: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 8 },
+    title: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary },
     imagePicker: { height: 200, backgroundColor: THEME.bgCard, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 5, overflow: 'hidden', borderWidth: 1, borderColor: THEME.border },
     imagePickerInner: { alignItems: 'center', gap: 8 },
+    imageGrid: { flexDirection: 'row', paddingHorizontal: 10, alignItems: 'center' },
     imagePreview: { width: '100%', height: '100%' },
+    imagePreviewSmall: { width: 150, height: 150, borderRadius: 10, marginRight: 10 },
     imagePickerText: { color: THEME.textMuted, fontSize: 15, fontWeight: '600' },
     input: { backgroundColor: THEME.bgInput, padding: 15, borderRadius: 12, marginBottom: 5, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
     inputError: { borderColor: THEME.danger, borderWidth: 1.5 },

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image, StatusBar } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axiosConfig';
 import { THEME } from '../theme';
@@ -17,6 +18,7 @@ const EditProductScreen = ({ route, navigation }) => {
     const [stoneName, setStoneName] = useState(product.stoneName);
     const [stock, setStock] = useState(product.stockInSqFt.toString());
     const [price, setPrice] = useState(product.pricePerSqFt.toString());
+    const [imageUris, setImageUris] = useState([]);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -39,13 +41,47 @@ const EditProductScreen = ({ route, navigation }) => {
         return Object.keys(newErrors).length === 0;
     };
 
+    const pickImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (permissionResult.granted === false) { Alert.alert('Permission Required', 'We need access to your photos to update a slab.'); return; }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            selectionLimit: 5,
+            quality: 0.8
+        });
+        if (!result.canceled) {
+            const selectedUris = result.assets.map(asset => asset.uri);
+            setImageUris(selectedUris);
+        }
+    };
+
     const handleUpdateProduct = async () => {
         if (!validate()) return;
         setLoading(true);
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const updatedData = { stoneName: stoneName.trim(), stockInSqFt: Number(stock), pricePerSqFt: Number(price) };
-            await api.put(`/products/${product._id}`, updatedData, { headers: { Authorization: `Bearer ${token}` } });
+            
+            let payload;
+            let headers = { Authorization: `Bearer ${token}` };
+
+            if (imageUris.length > 0) {
+                payload = new FormData();
+                payload.append('stoneName', stoneName.trim());
+                payload.append('stockInSqFt', Number(stock));
+                payload.append('pricePerSqFt', Number(price));
+                imageUris.forEach((uri) => {
+                    const filename = uri.split('/').pop();
+                    const match = /\.(\w+)$/.exec(filename);
+                    const type = match ? `image/${match[1]}` : `image`;
+                    payload.append('images', { uri, name: filename, type: type });
+                });
+                headers['Content-Type'] = 'multipart/form-data';
+            } else {
+                payload = { stoneName: stoneName.trim(), stockInSqFt: Number(stock), pricePerSqFt: Number(price) };
+            }
+
+            await api.put(`/products/${product._id}`, payload, { headers });
             Alert.alert('Success!', 'Slab details updated successfully.');
             navigation.goBack();
         } catch (error) {
@@ -59,16 +95,36 @@ const EditProductScreen = ({ route, navigation }) => {
         } finally { setLoading(false); }
     };
 
+    const currentImages = product.imageUrls || (product.imageUrl ? [product.imageUrl] : []);
+
     return (
         <ScrollView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={styles.form}>
-                <Text style={styles.title}>Edit Slab Details</Text>
-                {product.imageUrl && (
-                    <View style={styles.imagePicker}>
-                        <Image source={{ uri: getFullImageUrl(product.imageUrl) }} style={styles.imagePreview} />
-                    </View>
-                )}
+                <View style={styles.headerRow}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.textPrimary} />
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Edit Slab Details</Text>
+                </View>
+
+                <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+                    {imageUris.length > 0 ? (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageGrid}>
+                            {imageUris.map((uri, idx) => <Image key={idx} source={{ uri }} style={styles.imagePreviewSmall} />)}
+                        </ScrollView>
+                    ) : currentImages.length > 0 ? (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageGrid}>
+                            {currentImages.map((img, idx) => <Image key={idx} source={{ uri: getFullImageUrl(img) }} style={styles.imagePreviewSmall} />)}
+                        </ScrollView>
+                    ) : (
+                        <View style={styles.imagePickerInner}>
+                            <MaterialCommunityIcons name="camera-plus-outline" size={32} color={THEME.textMuted} />
+                            <Text style={styles.imagePickerText}>Tap to Replace Photos</Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
+
                 <Text style={styles.label}>Stone Name</Text>
                 <TextInput style={[styles.input, errors.stoneName && styles.inputError]} placeholder="Stone Name" placeholderTextColor={THEME.textMuted} value={stoneName}
                     onChangeText={(text) => { setStoneName(text); setErrors(prev => ({ ...prev, stoneName: undefined })); }} />
@@ -92,12 +148,19 @@ const EditProductScreen = ({ route, navigation }) => {
     );
 };
 
+import * as ImagePicker from 'expo-image-picker';
+
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
-    form: { padding: 30 },
-    title: { fontSize: 28, fontWeight: '800', color: THEME.textPrimary, marginBottom: 20 },
-    imagePicker: { height: 200, backgroundColor: THEME.bgCard, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 20, overflow: 'hidden', borderWidth: 1, borderColor: THEME.border },
-    imagePreview: { width: '100%', height: '100%' },
+    form: { padding: 25 },
+    headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 25, gap: 12 },
+    backButton: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 8 },
+    title: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary },
+    imagePicker: { height: 180, backgroundColor: THEME.bgCard, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 20, overflow: 'hidden', borderWidth: 1, borderColor: THEME.border },
+    imagePickerInner: { alignItems: 'center', gap: 8 },
+    imageGrid: { flexDirection: 'row', paddingHorizontal: 10, alignItems: 'center' },
+    imagePreviewSmall: { width: 140, height: 140, borderRadius: 10, marginRight: 10 },
+    imagePickerText: { color: THEME.textMuted, fontSize: 14, fontWeight: '600' },
     label: { fontSize: 14, color: THEME.textSecondary, marginBottom: 5, fontWeight: '600', marginLeft: 5 },
     input: { backgroundColor: THEME.bgInput, padding: 15, borderRadius: 12, marginBottom: 5, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
     inputError: { borderColor: THEME.danger, borderWidth: 1.5 },
