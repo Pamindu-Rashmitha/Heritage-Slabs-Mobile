@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, ScrollView, StatusBar } from 'react-native';
+import { 
+    View, Text, TextInput, TouchableOpacity, StyleSheet, Image, 
+    Alert, ActivityIndicator, ScrollView, StatusBar 
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../api/axiosConfig';
 import { THEME } from '../theme';
 
@@ -86,70 +91,159 @@ const AddProductScreen = ({ navigation }) => {
     };
 
     return (
-        <ScrollView style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
-            <View style={styles.form}>
-                <View style={styles.headerRow}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.textPrimary} />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>Add New Slab</Text>
-                </View>
-                <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-                    {imageUris.length > 0 ? (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageGrid}>
-                            {imageUris.map((uri, index) => (
-                                <Image key={index} source={{ uri }} style={styles.imagePreviewSmall} />
-                            ))}
-                        </ScrollView>
-                    ) : (
-                        <View style={styles.imagePickerInner}>
-                            <MaterialCommunityIcons name="camera-plus-outline" size={32} color={THEME.textMuted} />
-                            <Text style={styles.imagePickerText}>Tap to Select Photos (Max 5)</Text>
-                        </View>
-                    )}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={THEME.textPrimary} />
                 </TouchableOpacity>
-                {errors.image && <Text style={styles.errorText}>{errors.image}</Text>}
-
-                <TextInput style={[styles.input, errors.stoneName && styles.inputError]} placeholder="Stone Name (e.g., Black Galaxy)" placeholderTextColor={THEME.textMuted} value={stoneName}
-                    onChangeText={(text) => { setStoneName(text); setErrors(prev => ({ ...prev, stoneName: undefined })); }} />
-                {errors.stoneName && <Text style={styles.errorText}>{errors.stoneName}</Text>}
-
-                <TextInput style={[styles.input, errors.stock && styles.inputError]} placeholder="Stock in SqFt (e.g., 500)" placeholderTextColor={THEME.textMuted} value={stock}
-                    onChangeText={(text) => { setStock(text); setErrors(prev => ({ ...prev, stock: undefined })); }} keyboardType="numeric" />
-                {errors.stock && <Text style={styles.errorText}>{errors.stock}</Text>}
-
-                <TextInput style={[styles.input, errors.price && styles.inputError]} placeholder="Price per SqFt (e.g., 1200)" placeholderTextColor={THEME.textMuted} value={price}
-                    onChangeText={(text) => { setPrice(text); setErrors(prev => ({ ...prev, price: undefined })); }} keyboardType="numeric" />
-                {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
-
-                <TouchableOpacity style={styles.uploadButton} onPress={handleAddProduct} disabled={loading}>
-                    {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Upload Product</Text>}
-                </TouchableOpacity>
+                <Text style={styles.title}>Add New Slab</Text>
             </View>
-        </ScrollView>
+
+            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+                <View style={styles.form}>
+                    <TouchableOpacity style={styles.imagePicker} onPress={pickImage} activeOpacity={0.8}>
+                        {imageUris.length > 0 ? (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageGrid}>
+                                {imageUris.map((uri, index) => (
+                                    <Image key={index} source={{ uri }} style={styles.imagePreviewSmall} />
+                                ))}
+                            </ScrollView>
+                        ) : (
+                            <View style={styles.imagePickerInner}>
+                                <View style={styles.camBadge}>
+                                    <MaterialCommunityIcons name="camera-plus" size={24} color={THEME.indigo} />
+                                </View>
+                                <Text style={styles.imagePickerText}>Tap to Select Photos (Max 5)</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                    {errors.image && <Text style={styles.errorText}>{errors.image}</Text>}
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Stone Name</Text>
+                        <TextInput 
+                            style={[styles.input, errors.stoneName && styles.inputError]} 
+                            placeholder="e.g., Black Galaxy" 
+                            placeholderTextColor={THEME.textMuted} 
+                            value={stoneName}
+                            onChangeText={(text) => { setStoneName(text); setErrors(prev => ({ ...prev, stoneName: undefined })); }} 
+                        />
+                        {errors.stoneName && <Text style={styles.errorText}>{errors.stoneName}</Text>}
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Stock In SqFt</Text>
+                        <TextInput 
+                            style={[styles.input, errors.stock && styles.inputError]} 
+                            placeholder="e.g., 500" 
+                            placeholderTextColor={THEME.textMuted} 
+                            value={stock}
+                            onChangeText={(text) => { setStock(text); setErrors(prev => ({ ...prev, stock: undefined })); }} 
+                            keyboardType="numeric" 
+                        />
+                        {errors.stock && <Text style={styles.errorText}>{errors.stock}</Text>}
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Price Per SqFt</Text>
+                        <TextInput 
+                            style={[styles.input, errors.price && styles.inputError]} 
+                            placeholder="e.g., 2500" 
+                            placeholderTextColor={THEME.textMuted} 
+                            value={price}
+                            onChangeText={(text) => { setPrice(text); setErrors(prev => ({ ...prev, price: undefined })); }} 
+                            keyboardType="numeric" 
+                        />
+                        {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
+                    </View>
+
+                    <TouchableOpacity style={styles.uploadButton} onPress={handleAddProduct} disabled={loading} activeOpacity={0.9}>
+                        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Upload Product</Text>}
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: THEME.bg },
-    form: { padding: 25 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 25, gap: 12 },
-    backButton: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 8 },
-    title: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary },
-    imagePicker: { height: 200, backgroundColor: THEME.bgCard, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 5, overflow: 'hidden', borderWidth: 1, borderColor: THEME.border },
-    imagePickerInner: { alignItems: 'center', gap: 8 },
+    safeArea: { flex: 1, backgroundColor: THEME.bg },
+    container: { flex: 1 },
+    header: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        paddingHorizontal: 20, 
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: THEME.border,
+        backgroundColor: THEME.bg
+    },
+    backButton: { 
+        backgroundColor: 'rgba(255,255,255,0.06)', 
+        borderRadius: 10, 
+        padding: 8,
+        marginRight: 15
+    },
+    title: { fontSize: 20, fontWeight: '800', color: THEME.textPrimary },
+    form: { padding: 20 },
+    imagePicker: { 
+        height: 180, 
+        backgroundColor: THEME.bgCard, 
+        borderRadius: 16, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        marginBottom: 20, 
+        overflow: 'hidden', 
+        borderWidth: 1, 
+        borderColor: THEME.border,
+        borderStyle: 'dashed'
+    },
+    imagePickerInner: { alignItems: 'center', gap: 10 },
+    camBadge: {
+        backgroundColor: 'rgba(99, 102, 241, 0.15)',
+        padding: 12,
+        borderRadius: 20,
+    },
     imageGrid: { flexDirection: 'row', paddingHorizontal: 10, alignItems: 'center' },
-    imagePreview: { width: '100%', height: '100%' },
-    imagePreviewSmall: { width: 150, height: 150, borderRadius: 10, marginRight: 10 },
-    imagePickerText: { color: THEME.textMuted, fontSize: 15, fontWeight: '600' },
-    input: { backgroundColor: THEME.bgInput, padding: 15, borderRadius: 12, marginBottom: 5, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
+    imagePreviewSmall: { width: 140, height: 140, borderRadius: 12, marginRight: 12 },
+    imagePickerText: { color: THEME.textMuted, fontSize: 14, fontWeight: '600' },
+    
+    inputGroup: { marginBottom: 20 },
+    label: { 
+        fontSize: 14, 
+        color: THEME.textSecondary, 
+        marginBottom: 8, 
+        fontWeight: '600', 
+        marginLeft: 4 
+    },
+    input: { 
+        backgroundColor: THEME.bgInput, 
+        padding: 16, 
+        borderRadius: 14, 
+        fontSize: 16, 
+        borderWidth: 1, 
+        borderColor: THEME.border, 
+        color: THEME.textPrimary 
+    },
     inputError: { borderColor: THEME.danger, borderWidth: 1.5 },
-    errorText: { color: THEME.danger, fontSize: 12, marginBottom: 10, marginLeft: 5 },
-    uploadButton: { backgroundColor: THEME.indigo, padding: 15, borderRadius: 12, marginTop: 10, alignItems: 'center', shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
-    buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+    errorText: { color: THEME.danger, fontSize: 12, marginTop: 5, marginLeft: 5 },
+    
+    uploadButton: { 
+        backgroundColor: THEME.indigo, 
+        padding: 16, 
+        borderRadius: 14, 
+        marginTop: 10, 
+        alignItems: 'center', 
+        shadowColor: THEME.indigo, 
+        shadowOffset: { width: 0, height: 8 }, 
+        shadowOpacity: 0.4, 
+        shadowRadius: 12, 
+        elevation: 8 
+    },
+    buttonText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
 });
 
 export default AddProductScreen;
