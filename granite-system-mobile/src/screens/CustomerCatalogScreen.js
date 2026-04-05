@@ -26,7 +26,7 @@ const addToCart = async (product) => {
         Alert.alert('Error', 'Could not add to cart.');
     }
 };
-const SERVER_URL = 'http://192.168.1.8:5000';
+const getServerUrl = () => api.defaults.baseURL.replace(/\/api$/, '');
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const NavItem = ({ icon, label, color, onPress }) => (
@@ -48,8 +48,9 @@ const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateO
 
 const SlabCard = ({ item, onAddToCart, onPress }) => {
     const images = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
+    const serverUrl = getServerUrl();
     const finalImageUrl = images.length > 0
-        ? `${SERVER_URL}${images[0]}`
+        ? (images[0].startsWith('http') ? images[0] : `${serverUrl}${images[0].startsWith('/') ? '' : '/'}${images[0]}`)
         : 'https://via.placeholder.com/800x600?text=No+Image';
 
     const renderStars = (rating = 0) => {
@@ -226,14 +227,18 @@ const CustomerCatalogScreen = ({ navigation }) => {
                                         {(selectedProduct.imageUrls && selectedProduct.imageUrls.length > 0 
                                             ? selectedProduct.imageUrls 
                                             : (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : [])
-                                        ).map((img, index) => (
-                                            <Image
-                                                key={index}
-                                                source={{ uri: `${SERVER_URL}${img}` }}
-                                                style={styles.modalImage}
-                                                resizeMode="cover"
-                                            />
-                                        ))}
+                                        ).map((img, index) => {
+                                            const serverUrl = getServerUrl();
+                                            const uri = img.startsWith('http') ? img : `${serverUrl}${img.startsWith('/') ? '' : '/'}${img}`;
+                                            return (
+                                                <Image
+                                                    key={index}
+                                                    source={{ uri }}
+                                                    style={styles.modalImage}
+                                                    resizeMode="cover"
+                                                />
+                                            );
+                                        })}
                                         {(!selectedProduct.imageUrls || selectedProduct.imageUrls.length === 0) && !selectedProduct.imageUrl && (
                                             <Image
                                                 source={{ uri: 'https://via.placeholder.com/800x600?text=No+Image' }}

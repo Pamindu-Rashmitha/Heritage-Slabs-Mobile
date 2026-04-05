@@ -23,38 +23,43 @@ const getFullImageUrl = (imagePath) => {
     return `${serverUrl}${formattedPath}`;
 };
 
-const ProductRow = ({ item, onUpdate, onDelete }) => (
-    <View style={styles.row}>
-        <View style={styles.thumbContainer}>
-            {item.imageUrl ? (
-                <Image source={{ uri: getFullImageUrl(item.imageUrl) }} style={styles.thumb} resizeMode="cover" />
-            ) : (
-                <View style={styles.thumbPlaceholder}>
-                    <MaterialCommunityIcons name="image-off-outline" size={28} color={THEME.textMuted} />
+const ProductRow = ({ item, onUpdate, onDelete }) => {
+    const images = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
+    const thumbUri = images.length > 0 ? getFullImageUrl(images[0]) : null;
+
+    return (
+        <View style={styles.row}>
+            <View style={styles.thumbContainer}>
+                {thumbUri ? (
+                    <Image source={{ uri: thumbUri }} style={styles.thumb} resizeMode="cover" />
+                ) : (
+                    <View style={styles.thumbPlaceholder}>
+                        <MaterialCommunityIcons name="image-off-outline" size={28} color={THEME.textMuted} />
+                    </View>
+                )}
+            </View>
+            <View style={styles.rowBody}>
+                <View style={styles.rowInfo}>
+                    <Text style={styles.rowName} numberOfLines={1}>{item.stoneName}</Text>
+                    <View style={styles.rowMeta}>
+                        <View style={styles.badge}><Text style={styles.badgeText}>LKR {item.pricePerSqFt}/SqFt</Text></View>
+                        <Text style={styles.stockText}>{item.stockInSqFt} SqFt</Text>
+                    </View>
                 </View>
-            )}
-        </View>
-        <View style={styles.rowBody}>
-            <View style={styles.rowInfo}>
-                <Text style={styles.rowName} numberOfLines={1}>{item.stoneName}</Text>
-                <View style={styles.rowMeta}>
-                    <View style={styles.badge}><Text style={styles.badgeText}>LKR {item.pricePerSqFt}/SqFt</Text></View>
-                    <Text style={styles.stockText}>{item.stockInSqFt} SqFt</Text>
+                <View style={styles.rowActions}>
+                    <TouchableOpacity style={[styles.actionBtn, styles.updateBtn]} onPress={() => onUpdate(item)} activeOpacity={0.8}>
+                        <MaterialCommunityIcons name="pencil-outline" size={18} color={THEME.indigo} />
+                        <Text style={[styles.actionText, { color: THEME.indigo }]}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={() => onDelete(item)} activeOpacity={0.8}>
+                        <MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger} />
+                        <Text style={[styles.actionText, { color: THEME.danger }]}>Delete</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
-            <View style={styles.rowActions}>
-                <TouchableOpacity style={[styles.actionBtn, styles.updateBtn]} onPress={() => onUpdate(item)} activeOpacity={0.8}>
-                    <MaterialCommunityIcons name="pencil-outline" size={18} color={THEME.indigo} />
-                    <Text style={[styles.actionText, { color: THEME.indigo }]}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={() => onDelete(item)} activeOpacity={0.8}>
-                    <MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger} />
-                    <Text style={[styles.actionText, { color: THEME.danger }]}>Delete</Text>
-                </TouchableOpacity>
-            </View>
         </View>
-    </View>
-);
+    );
+};
 
 const EmptyState = () => (
     <View style={styles.emptyContainer}>

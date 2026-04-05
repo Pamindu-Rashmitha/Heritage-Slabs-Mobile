@@ -3,7 +3,7 @@ const Product = require('../models/Product');
 const createProduct = async (req, res) => {
     try {
         const { stoneName, pricePerSqFt, stockInSqFt } = req.body;
-        const imageUrls = req.files ? req.files.map(file => `/${file.path.replace(/\\/g, '/')}`) : [];
+        const imageUrls = req.files ? req.files.map(file => file.path) : [];
 
         const product = await Product.create({
             user: req.user.id,
@@ -53,7 +53,7 @@ const updateProduct = async (req, res) => {
 
         // If new files are uploaded, update imageUrls
         if (req.files && req.files.length > 0) {
-            updateData.imageUrls = req.files.map(file => `/${file.path.replace(/\\/g, '/')}`);
+            updateData.imageUrls = req.files.map(file => file.path);
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
