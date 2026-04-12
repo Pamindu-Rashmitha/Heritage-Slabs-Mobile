@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import ticketService from '../api/ticketService';
 import { THEME } from '../theme';
 
 const STATUS_FLOW = ['Open','In Progress','Resolved'];
@@ -36,10 +36,10 @@ const TicketManagementScreen = ({ navigation }) => {
     const [replyText, setReplyText] = useState(''); const [newStatus, setNewStatus] = useState(''); const [updating, setUpdating] = useState(false);
 
     useFocusEffect(useCallback(() => { fetchTickets(); }, []));
-    const fetchTickets = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const token = await AsyncStorage.getItem('userToken'); const res = await api.get('/tickets', { headers: { Authorization: `Bearer ${token}` } }); setTickets(res.data.tickets ?? res.data ?? []); } catch (e) { Alert.alert('Fetch Error', 'Could not load tickets.'); } finally { setLoading(false); setRefreshing(false); } };
+    const fetchTickets = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const res = await ticketService.getAll(); setTickets(res.data.tickets ?? res.data ?? []); } catch (e) { Alert.alert('Fetch Error', 'Could not load tickets.'); } finally { setLoading(false); setRefreshing(false); } };
     const openDetail = (item) => { setSelectedTicket(item); setReplyText(item.adminReply || ''); setNewStatus(item.status); setDetailModalVisible(true); };
-    const handleUpdate = async () => { if (!selectedTicket) return; setUpdating(true); try { const token = await AsyncStorage.getItem('userToken'); const payload = { status: newStatus }; if (replyText.trim()) payload.adminReply = replyText.trim(); await api.put(`/tickets/${selectedTicket._id}`, payload, { headers: { Authorization: `Bearer ${token}` } }); setTickets(p => p.map(t => t._id === selectedTicket._id ? { ...t, status: newStatus, adminReply: replyText.trim() || t.adminReply } : t)); setDetailModalVisible(false); Alert.alert('Updated', 'Ticket has been updated successfully.'); } catch (e) { Alert.alert('Update Failed', 'Could not update ticket.'); } finally { setUpdating(false); } };
-    const handleDelete = (item) => { Alert.alert('Delete Ticket', `Delete "${item.subject}"?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => { try { const token = await AsyncStorage.getItem('userToken'); await api.delete(`/tickets/${item._id}`, { headers: { Authorization: `Bearer ${token}` } }); setTickets(p => p.filter(t => t._id !== item._id)); } catch (e) { Alert.alert('Delete Failed', 'Could not delete ticket.'); } }}]); };
+    const handleUpdate = async () => { if (!selectedTicket) return; setUpdating(true); try { const payload = { status: newStatus }; if (replyText.trim()) payload.adminReply = replyText.trim(); await ticketService.update(selectedTicket._id, payload); setTickets(p => p.map(t => t._id === selectedTicket._id ? { ...t, status: newStatus, adminReply: replyText.trim() || t.adminReply } : t)); setDetailModalVisible(false); Alert.alert('Updated', 'Ticket has been updated successfully.'); } catch (e) { Alert.alert('Update Failed', 'Could not update ticket.'); } finally { setUpdating(false); } };
+    const handleDelete = (item) => { Alert.alert('Delete Ticket', `Delete "${item.subject}"?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => { try { await ticketService.delete(item._id); setTickets(p => p.filter(t => t._id !== item._id)); } catch (e) { Alert.alert('Delete Failed', 'Could not delete ticket.'); } }}]); };
 
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg} />

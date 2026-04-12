@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../api/axiosConfig';
+import productService from '../api/productService';
 import { THEME } from '../theme';
 
 const getFullImageUrl = (imagePath) => {
@@ -65,11 +66,7 @@ const EditProductScreen = ({ route, navigation }) => {
         if (!validate()) return;
         setLoading(true);
         try {
-            const token = await AsyncStorage.getItem('userToken');
-
             let payload;
-            let headers = { Authorization: `Bearer ${token}` };
-
             if (imageUris.length > 0) {
                 payload = new FormData();
                 payload.append('stoneName', stoneName.trim());
@@ -81,12 +78,11 @@ const EditProductScreen = ({ route, navigation }) => {
                     const type = match ? `image/${match[1]}` : `image`;
                     payload.append('images', { uri, name: filename, type: type });
                 });
-                headers['Content-Type'] = 'multipart/form-data';
             } else {
                 payload = { stoneName: stoneName.trim(), stockInSqFt: Number(stock), pricePerSqFt: Number(price) };
             }
 
-            await api.put(`/products/${product._id}`, payload, { headers });
+            await productService.update(product._id, payload, imageUris.length > 0);
             Alert.alert('Success!', 'Slab details updated successfully.');
             navigation.goBack();
         } catch (error) {

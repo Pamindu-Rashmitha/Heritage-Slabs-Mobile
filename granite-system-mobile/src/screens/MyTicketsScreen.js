@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import ticketService from '../api/ticketService';
 import { THEME } from '../theme';
 
 const getStatusColor = (s) => { if (s === 'Open') return { text: THEME.danger, bg: THEME.dangerBg }; if (s === 'In Progress') return { text: THEME.warning, bg: THEME.warningBg }; if (s === 'Resolved') return { text: THEME.success, bg: THEME.successBg }; return { text: THEME.textSecondary, bg: 'rgba(255,255,255,0.06)' }; };
@@ -37,7 +37,7 @@ const TicketCard = ({ item }) => {
 const MyTicketsScreen = ({ navigation }) => {
     const [tickets, setTickets] = useState([]); const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false);
     useFocusEffect(useCallback(() => { fetchMyTickets(); }, []));
-    const fetchMyTickets = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const token = await AsyncStorage.getItem('userToken'); const res = await api.get('/tickets/my', { headers: { Authorization: `Bearer ${token}` } }); setTickets(res.data.tickets ?? res.data ?? []); } catch (e) { Alert.alert('Error', 'Could not load your tickets.'); } finally { setLoading(false); setRefreshing(false); } };
+    const fetchMyTickets = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const res = await ticketService.getMyTickets(); setTickets(res.data.tickets ?? res.data ?? []); } catch (e) { Alert.alert('Error', 'Could not load your tickets.'); } finally { setLoading(false); setRefreshing(false); } };
 
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg} />

@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import api from '../api/axiosConfig';
+import authService from '../api/authService';
 import { THEME } from '../theme';
 
 const UserManagementScreen = ({ navigation }) => {
     const [users, setUsers] = useState([]); const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false);
     useEffect(() => { fetchUsers(); }, []);
-    const fetchUsers = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const response = await api.get('/auth/users'); setUsers(Array.isArray(response.data) ? response.data : []); } catch (error) { console.error('Error fetching users:', error); Alert.alert('Error', 'Failed to retrieve user list.'); } finally { setLoading(false); setRefreshing(false); } };
+    const fetchUsers = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const response = await authService.getUsers(); setUsers(Array.isArray(response.data) ? response.data : []); } catch (error) { console.error('Error fetching users:', error); Alert.alert('Error', 'Failed to retrieve user list.'); } finally { setLoading(false); setRefreshing(false); } };
     const confirmDelete = (userId, userName) => { Alert.alert('Delete User', `Are you sure you want to completely remove ${userName}? This action cannot be undone.`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => handleDeleteUser(userId) }]); };
-    const handleDeleteUser = async (userId) => { try { const response = await api.delete(`/auth/delete/${userId}`); if (response.status === 200) { Alert.alert('Success', 'User was deleted successfully.'); fetchUsers(true); } } catch (error) { console.error('Delete User error:', error); Alert.alert('Error', error.response?.data?.message || 'Could not delete the user.'); } };
+    const handleDeleteUser = async (userId) => { try { const response = await authService.deleteUser(userId); if (response.status === 200) { Alert.alert('Success', 'User was deleted successfully.'); fetchUsers(true); } } catch (error) { console.error('Delete User error:', error); Alert.alert('Error', error.response?.data?.message || 'Could not delete the user.'); } };
 
     const renderUser = ({ item }) => (
         <View style={styles.userCard}>

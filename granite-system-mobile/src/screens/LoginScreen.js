@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import api from '../api/axiosConfig';
+import authService from '../api/authService';
 import {
     View,
     Text,
@@ -32,10 +32,7 @@ const LoginScreen = ({ navigation }) => {
         }
 
         try {
-            const response = await api.post('/auth/login', {
-                email: email,
-                password: password,
-            });
+            const response = await authService.login(email, password);
 
             const token = response.data.token;
             const role = response.data.role;

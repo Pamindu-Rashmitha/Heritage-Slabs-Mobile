@@ -13,10 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import axios from 'axios';
+import dashboardService from '../api/dashboardService';
 import { THEME, glassCard } from '../theme';
-
-const API_BASE_URL = 'http://192.168.1.8:5000';
 
 const MANAGEMENT_SECTIONS = [
     { key: 'products', title: 'Products', icon: 'package-variant-closed', color: THEME.gold, route: 'ProductManagement' },
@@ -95,10 +93,7 @@ const AdminDashboardScreen = ({ navigation }) => {
 
     const fetchStats = useCallback(async () => {
         try {
-            const token = await AsyncStorage.getItem('userToken');
-            const res = await axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await dashboardService.getStats();
             setStats(res.data);
         } catch (error) {
             console.error('Stats fetch error:', error);

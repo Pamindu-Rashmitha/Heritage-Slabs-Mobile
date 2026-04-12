@@ -20,10 +20,17 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "usesCleartextTraffic": true,
+      "package": "com.pamiya.granitesystemmobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7ac78796-3164-4deb-86be-7e41854629ed"
+      }
     }
   }
 }

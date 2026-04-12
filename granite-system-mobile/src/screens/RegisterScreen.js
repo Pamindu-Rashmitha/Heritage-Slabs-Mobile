@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../api/axiosConfig';
+import authService from '../api/authService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../theme';
 
@@ -64,7 +64,7 @@ const RegisterScreen = ({ navigation }) => {
         }
 
         try {
-            const response = await api.post('/auth/register', { name, email, password });
+            const response = await authService.register({ name, email, password });
 
             const token = response.data.token;
             const role = response.data.role || 'customer';

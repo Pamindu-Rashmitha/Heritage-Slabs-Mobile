@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import api from '../api/axiosConfig';
+import authService from '../api/authService';
 import { THEME } from '../theme';
 
 const ProfileScreen = ({ navigation }) => {
@@ -21,7 +21,7 @@ const ProfileScreen = ({ navigation }) => {
             const storedId = await AsyncStorage.getItem('userId');
             if (!storedId) { Alert.alert('Error', 'User ID not found. Please log in again.'); navigation.replace('Login'); return; }
             setUserId(storedId);
-            const response = await api.get(`/auth/user/${storedId}`);
+            const response = await authService.getUserById(storedId);
             if (response.data) { setName(response.data.name || ''); setEmail(response.data.email || ''); }
         } catch (error) { console.error('Error fetching profile:', error); Alert.alert('Error', 'Could not load profile data.'); }
         finally { setLoading(false); }
@@ -33,7 +33,7 @@ const ProfileScreen = ({ navigation }) => {
         try {
             const payload = { name, email };
             if (password) { payload.password = password; }
-            const response = await api.patch(`/auth/update/${userId}`, payload);
+            const response = await authService.updateUser(userId, payload);
             if (response.status === 200) { Alert.alert('Success', 'Profile updated successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]); }
         } catch (error) { console.error('Update error:', error); Alert.alert('Error', error.response?.data?.message || 'Failed to update profile'); }
         finally { setSaving(false); }
@@ -45,7 +45,7 @@ const ProfileScreen = ({ navigation }) => {
             { text: 'Delete', style: 'destructive', onPress: async () => {
                 try {
                     setSaving(true);
-                    await api.delete(`/auth/delete/${userId}`);
+                    await authService.deleteUser(userId);
                     await AsyncStorage.removeItem('userToken');
                     await AsyncStorage.removeItem('userRole');
                     await AsyncStorage.removeItem('userId');

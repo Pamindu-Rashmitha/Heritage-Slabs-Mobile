@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context'; 
 import { THEME } from './src/theme';
+import { setNavigationRef } from './src/api/axiosConfig';
 
 // Import all screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -43,9 +44,15 @@ const StoneTheme = {
 };
 
 export default function App() {
+  const navigationRef = useRef(null);
+
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={StoneTheme}>
+      <NavigationContainer
+        ref={navigationRef}
+        theme={StoneTheme}
+        onReady={() => setNavigationRef(navigationRef.current)}
+      >
         <Stack.Navigator 
           initialRouteName="Login" 
           screenOptions={{ 

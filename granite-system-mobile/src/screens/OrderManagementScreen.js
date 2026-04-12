@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import orderService from '../api/orderService';
 import { THEME } from '../theme';
 
 const STATUS_FLOW = ['Pending', 'Processing', 'Shipped', 'Delivered'];
@@ -41,10 +41,10 @@ const OrderManagementScreen = ({ navigation }) => {
     const [orders, setOrders] = useState([]); const [loading, setLoading] = useState(true); const [refreshing, setRefreshing] = useState(false);
     const [statusModalVisible, setStatusModalVisible] = useState(false); const [selectedOrder, setSelectedOrder] = useState(null);
     useFocusEffect(useCallback(() => { fetchOrders(); }, []));
-    const fetchOrders = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const token = await AsyncStorage.getItem('userToken'); const response = await api.get('/orders', { headers: { Authorization: `Bearer ${token}` } }); const data = response.data.orders ?? response.data; setOrders(Array.isArray(data) ? data : []); } catch (error) { Alert.alert('Fetch Error', 'Could not load orders.'); } finally { setLoading(false); setRefreshing(false); } };
+    const fetchOrders = async (isRefresh = false) => { if (isRefresh) setRefreshing(true); else setLoading(true); try { const response = await orderService.getAll(); const data = response.data.orders ?? response.data; setOrders(Array.isArray(data) ? data : []); } catch (error) { Alert.alert('Fetch Error', 'Could not load orders.'); } finally { setLoading(false); setRefreshing(false); } };
     const handleUpdateStatus = (item) => { setSelectedOrder(item); setStatusModalVisible(true); };
-    const confirmStatusUpdate = async (newStatus) => { setStatusModalVisible(false); try { const token = await AsyncStorage.getItem('userToken'); await api.put(`/orders/${selectedOrder._id}`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } }); setOrders((prev) => prev.map((o) => o._id === selectedOrder._id ? { ...o, status: newStatus } : o)); } catch (error) { Alert.alert('Update Failed', 'Could not update order status.'); } };
-    const handleDelete = (item) => { Alert.alert('Delete Order', 'Are you sure you want to delete this order?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => { try { const token = await AsyncStorage.getItem('userToken'); await api.delete(`/orders/${item._id}`, { headers: { Authorization: `Bearer ${token}` } }); setOrders((prev) => prev.filter((o) => o._id !== item._id)); } catch (error) { Alert.alert('Delete Failed', 'Could not delete the order.'); } } }]); };
+    const confirmStatusUpdate = async (newStatus) => { setStatusModalVisible(false); try { await orderService.updateStatus(selectedOrder._id, newStatus); setOrders((prev) => prev.map((o) => o._id === selectedOrder._id ? { ...o, status: newStatus } : o)); } catch (error) { Alert.alert('Update Failed', 'Could not update order status.'); } };
+    const handleDelete = (item) => { Alert.alert('Delete Order', 'Are you sure you want to delete this order?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => { try { await orderService.delete(item._id); setOrders((prev) => prev.filter((o) => o._id !== item._id)); } catch (error) { Alert.alert('Delete Failed', 'Could not delete the order.'); } } }]); };
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>

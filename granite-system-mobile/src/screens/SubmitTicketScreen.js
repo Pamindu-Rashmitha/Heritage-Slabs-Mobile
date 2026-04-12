@@ -4,7 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import orderService from '../api/orderService';
+import ticketService from '../api/ticketService';
+import productService from '../api/productService';
 import { THEME } from '../theme';
 
 const TYPES = ['Review', 'Support'];
@@ -19,10 +21,10 @@ const SubmitTicketScreen = ({ navigation, route }) => {
     const [orders, setOrders] = useState([]); const [selectedOrder, setSelectedOrder] = useState(presetOrderId); const [loadingOrders, setLoadingOrders] = useState(false);
 
     useFocusEffect(useCallback(() => { fetchMyOrders(); }, []));
-    const fetchMyOrders = async () => { setLoadingOrders(true); try { const token = await AsyncStorage.getItem('userToken'); const res = await api.get('/orders/my', { headers: { Authorization: `Bearer ${token}` } }); setOrders(res.data.orders ?? res.data ?? []); } catch (e) { setOrders([]); } finally { setLoadingOrders(false); } };
+    const fetchMyOrders = async () => { setLoadingOrders(true); try { const res = await orderService.getMyOrders(); setOrders(res.data.orders ?? res.data ?? []); } catch (e) { setOrders([]); } finally { setLoadingOrders(false); } };
     const getOrderLabel = (orderId) => { const o = orders.find(o => o._id === orderId); if (!o) return 'Select an order...'; const date = new Date(o.createdAt).toLocaleDateString(); return `#${o._id.slice(-6).toUpperCase()} — LKR ${o.totalPrice?.toLocaleString()} (${date})`; };
     const validateForm = () => { if (!selectedOrder) { Alert.alert('Validation Error', 'Please select an order.'); return false; } if (!subject.trim()) { Alert.alert('Validation Error', 'Subject is required.'); return false; } if (subject.trim().length < 3) { Alert.alert('Validation Error', 'Subject must be at least 3 characters.'); return false; } if (/^\d+$/.test(subject.trim())) { Alert.alert('Validation Error', 'Subject cannot contain only numbers.'); return false; } if (!description.trim()) { Alert.alert('Validation Error', 'Description is required.'); return false; } if (description.trim().length < 10) { Alert.alert('Validation Error', 'Description must be at least 10 characters.'); return false; } return true; };
-    const handleSubmit = async () => { if (!validateForm()) return; setSubmitting(true); try { const token = await AsyncStorage.getItem('userToken'); const userId = await AsyncStorage.getItem('userId'); if (!userId) { Alert.alert('Error', 'Please log in again.'); navigation.replace('Login'); return; } if (type === 'Review') { await api.post('/products/review-order', { orderId: selectedOrder, subject: subject.trim(), description: description.trim(), rating }, { headers: { Authorization: `Bearer ${token}` } }); } else { await api.post('/tickets', { user: userId, order: selectedOrder, subject: subject.trim(), description: description.trim(), type }, { headers: { Authorization: `Bearer ${token}` } }); } Alert.alert('Submitted!', type === 'Review' ? 'Thank you for your review!' : 'Your support ticket has been submitted. We\'ll get back to you soon.', [{ text: 'OK', onPress: () => navigation.goBack() }]); } catch (e) { Alert.alert('Error', e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || 'Could not submit. Please try again.'); } finally { setSubmitting(false); } };
+    const handleSubmit = async () => { if (!validateForm()) return; setSubmitting(true); try { const userId = await AsyncStorage.getItem('userId'); if (!userId) { Alert.alert('Error', 'Please log in again.'); navigation.replace('Login'); return; } if (type === 'Review') { await productService.submitReview({ orderId: selectedOrder, subject: subject.trim(), description: description.trim(), rating }); } else { await ticketService.create({ user: userId, order: selectedOrder, subject: subject.trim(), description: description.trim(), type }); } Alert.alert('Submitted!', type === 'Review' ? 'Thank you for your review!' : 'Your support ticket has been submitted. We\'ll get back to you soon.', [{ text: 'OK', onPress: () => navigation.goBack() }]); } catch (e) { Alert.alert('Error', e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || 'Could not submit. Please try again.'); } finally { setSubmitting(false); } };
 
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg} />

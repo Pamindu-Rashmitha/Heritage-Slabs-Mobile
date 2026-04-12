@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import orderService from '../api/orderService';
 import { THEME } from '../theme';
 
 const getStatusColor = (s) => { if (s === 'Pending') return { text: THEME.warning, bg: THEME.warningBg }; if (s === 'Processing') return { text: THEME.info, bg: THEME.infoBg }; if (s === 'Shipped') return { text: THEME.slate, bg: THEME.slateLight }; if (s === 'Delivered') return { text: THEME.success, bg: THEME.successBg }; return { text: THEME.textSecondary, bg: 'rgba(255,255,255,0.06)' }; };
@@ -46,7 +46,7 @@ const MyOrdersScreen = ({ navigation }) => {
 
     const fetchMyOrders = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true); else setLoading(true);
-        try { const token = await AsyncStorage.getItem('userToken'); const res = await api.get('/orders/my', { headers: { Authorization: `Bearer ${token}` } }); setOrders(res.data.orders ?? res.data ?? []); }
+        try { const res = await orderService.getMyOrders(); setOrders(res.data.orders ?? res.data ?? []); }
         catch (e) { Alert.alert('Error', 'Could not load your orders.'); }
         finally { setLoading(false); setRefreshing(false); }
     };

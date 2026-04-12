@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import orderService from '../api/orderService';
 import { THEME } from '../theme';
 
 const CartScreen = ({ navigation }) => {
@@ -46,10 +46,9 @@ const CartScreen = ({ navigation }) => {
         if (!validateCheckout()) return;
         setPlacing(true);
         try {
-            const token = await AsyncStorage.getItem('userToken');
             const cleanCard = cardNumber.replace(/\s/g, '');
             const body = { products: cart.map(i => ({ productId: i._id, qty: i.qty || 1 })), totalPrice: getTotal(), shippingAddress: shippingAddress.trim(), paymentMethod, cardLastFour: paymentMethod === 'Card' ? cleanCard.slice(-4) : undefined };
-            await api.post('/orders', body, { headers: { Authorization: `Bearer ${token}` } });
+            await orderService.create(body);
             await AsyncStorage.removeItem('cart');
             setCart([]);
             Alert.alert('Order Placed!', paymentMethod === 'Card' ? 'Payment successful! Your order is confirmed.' : 'Your order has been placed. Pay on delivery.', [{ text: 'View My Orders', onPress: () => navigation.navigate('MyOrders') }, { text: 'OK' }]);

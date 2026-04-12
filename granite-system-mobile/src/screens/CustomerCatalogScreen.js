@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import api from '../api/axiosConfig';
+import productService from '../api/productService';
 import { THEME } from '../theme';
 
 const addToCart = async (product) => {
@@ -149,7 +150,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
     const fetchInventory = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true); else setLoading(true);
         try {
-            const response = await api.get('/products');
+            const response = await productService.getAll();
             const data = response.data.products ?? response.data;
             setProducts(Array.isArray(data) ? data : []);
         } catch (error) {

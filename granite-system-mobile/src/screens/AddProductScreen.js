@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import api from '../api/axiosConfig';
+import productService from '../api/productService';
 import { THEME } from '../theme';
 
 const AddProductScreen = ({ navigation }) => {
@@ -58,7 +58,7 @@ const AddProductScreen = ({ navigation }) => {
         if (!validate()) return;
         setLoading(true);
         try {
-            const token = await AsyncStorage.getItem('userToken');
+
             const formData = new FormData();
             formData.append('stoneName', stoneName.trim());
             formData.append('stockInSqFt', stock);
@@ -71,12 +71,7 @@ const AddProductScreen = ({ navigation }) => {
                 formData.append('images', { uri, name: filename, type: type });
             });
 
-            await api.post('/products', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await productService.create(formData);
             Alert.alert('Success!', 'New Granite Slab added to inventory.');
             navigation.goBack();
         } catch (error) {

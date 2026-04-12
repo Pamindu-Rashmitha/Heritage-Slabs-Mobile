@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import api from '../api/axiosConfig';
+import productService from '../api/productService';
 import { THEME } from '../theme';
 
 const StatsBar = ({ count }) => (
@@ -79,7 +80,7 @@ const ProductManagementScreen = ({ navigation }) => {
     const fetchProducts = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true); else setLoading(true);
         try {
-            const response = await api.get('/products');
+            const response = await productService.getAll();
             const data = response.data.products ?? response.data;
             setProducts(Array.isArray(data) ? data : []);
         } catch (error) { Alert.alert('Fetch Error', 'Could not load products. Check your connection.'); console.error('Fetch products error:', error); }
@@ -93,8 +94,7 @@ const ProductManagementScreen = ({ navigation }) => {
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', style: 'destructive', onPress: async () => {
                 try {
-                    const token = await AsyncStorage.getItem('userToken');
-                    await api.delete(`/products/${item._id}`, { headers: { Authorization: `Bearer ${token}` } });
+                    await productService.delete(item._id);
                     setProducts((prev) => prev.filter((p) => p._id !== item._id));
                 } catch (error) { Alert.alert('Delete Failed', 'Could not delete the product. Please try again.'); console.error('Delete error:', error); }
             }},

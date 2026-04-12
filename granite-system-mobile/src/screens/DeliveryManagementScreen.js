@@ -4,7 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import api from '../api/axiosConfig';
+import deliveryService from '../api/deliveryService';
+import orderService from '../api/orderService';
+import vehicleService from '../api/vehicleService';
 import { THEME } from '../theme';
 
 const STATUS_FLOW = ['Scheduled', 'In Transit', 'Completed'];
@@ -40,16 +42,16 @@ const DeliveryManagementScreen = ({ navigation }) => {
 
     const fetchAllData = async (isRefresh=false) => {
         if(isRefresh) setRefreshing(true); else setLoading(true);
-        try { const token = await AsyncStorage.getItem('userToken'); const h = { Authorization:`Bearer ${token}` }; const [dR,oR,vR] = await Promise.all([api.get('/deliveries',{headers:h}),api.get('/orders',{headers:h}),api.get('/vehicles',{headers:h})]); setDeliveries(dR.data.deliveries??dR.data??[]); setOrders(oR.data.orders??oR.data??[]); setVehicles(vR.data.vehicles??vR.data??[]); }
+        try { const [dR,oR,vR] = await Promise.all([deliveryService.getAll(),orderService.getAll(),vehicleService.getAll()]); setDeliveries(dR.data.deliveries??dR.data??[]); setOrders(oR.data.orders??oR.data??[]); setVehicles(vR.data.vehicles??vR.data??[]); }
         catch(e){ Alert.alert('Fetch Error','Could not load data.'); } finally { setLoading(false); setRefreshing(false); }
     };
 
     const openAddForm = () => { setSelectedOrderId(''); setSelectedVehicleId(''); setDriverName(''); setExpectedDate(''); setFormModalVisible(true); };
     const validateForm = () => { if(!selectedOrderId){Alert.alert('Validation Error','Please select an order.');return false;} if(!selectedVehicleId){Alert.alert('Validation Error','Please select a vehicle.');return false;} if(!driverName.trim()){Alert.alert('Validation Error','Driver name is required.');return false;} if(driverName.trim().length<2){Alert.alert('Validation Error','Driver name must be at least 2 characters.');return false;} if(!expectedDate.trim()){Alert.alert('Validation Error','Expected delivery date is required.');return false;} if(!/^\d{4}-\d{2}-\d{2}$/.test(expectedDate.trim())){Alert.alert('Validation Error','Date must be in YYYY-MM-DD format.');return false;} return true; };
 
-    const handleSubmit = async () => { if(!validateForm()) return; setFormLoading(true); try { const token = await AsyncStorage.getItem('userToken'); await api.post('/deliveries',{order:selectedOrderId,vehicle:selectedVehicleId,driverName:driverName.trim(),expectedDeliveryDate:expectedDate.trim()},{headers:{Authorization:`Bearer ${token}`}}); Alert.alert('Success','Delivery scheduled successfully.'); setFormModalVisible(false); fetchAllData(); } catch(e){ Alert.alert('Error',e.response?.data?.message||'Could not create delivery.'); } finally { setFormLoading(false); } };
-    const confirmStatusUpdate = async (newStatus) => { setStatusModalVisible(false); try { const token = await AsyncStorage.getItem('userToken'); await api.put(`/deliveries/${selectedDelivery._id}`,{status:newStatus},{headers:{Authorization:`Bearer ${token}`}}); setDeliveries(p=>p.map(d=>d._id===selectedDelivery._id?{...d,status:newStatus}:d)); } catch(e){ Alert.alert('Update Failed','Could not update delivery status.'); } };
-    const handleDelete = (item) => { Alert.alert('Delete Delivery','Are you sure?',[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:async()=>{ try { const token = await AsyncStorage.getItem('userToken'); await api.delete(`/deliveries/${item._id}`,{headers:{Authorization:`Bearer ${token}`}}); setDeliveries(p=>p.filter(d=>d._id!==item._id)); } catch(e){ Alert.alert('Delete Failed','Could not delete the delivery.'); } }}]); };
+    const handleSubmit = async () => { if(!validateForm()) return; setFormLoading(true); try { await deliveryService.create({order:selectedOrderId,vehicle:selectedVehicleId,driverName:driverName.trim(),expectedDeliveryDate:expectedDate.trim()}); Alert.alert('Success','Delivery scheduled successfully.'); setFormModalVisible(false); fetchAllData(); } catch(e){ Alert.alert('Error',e.response?.data?.message||'Could not create delivery.'); } finally { setFormLoading(false); } };
+    const confirmStatusUpdate = async (newStatus) => { setStatusModalVisible(false); try { await deliveryService.updateStatus(selectedDelivery._id, newStatus); setDeliveries(p=>p.map(d=>d._id===selectedDelivery._id?{...d,status:newStatus}:d)); } catch(e){ Alert.alert('Update Failed','Could not update delivery status.'); } };
+    const handleDelete = (item) => { Alert.alert('Delete Delivery','Are you sure?',[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:async()=>{ try { await deliveryService.delete(item._id); setDeliveries(p=>p.filter(d=>d._id!==item._id)); } catch(e){ Alert.alert('Delete Failed','Could not delete the delivery.'); } }}]); };
 
     const getOrderLabel = () => { const o=orders.find(x=>x._id===selectedOrderId); return o?`${o.user?.name||'Unknown'} - LKR ${o.totalPrice}`:'Tap to select order'; };
     const getVehicleLabel = () => { const v=vehicles.find(x=>x._id===selectedVehicleId); return v?`${v.licensePlate} (${v.vehicleType})`:'Tap to select vehicle'; };
