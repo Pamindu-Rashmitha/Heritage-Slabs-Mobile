@@ -17,9 +17,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/vijitha-granite.jpeg",
+        "backgroundImage": "./assets/vijitha-granite.jpeg",
+        "monochromeImage": "./assets/vijitha-granite.jpeg"
       },
       "usesCleartextTraffic": true,
       "package": "com.pamiya.granitesystemmobile"
