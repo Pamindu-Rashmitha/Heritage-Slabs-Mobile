@@ -29,9 +29,9 @@ const SubmitTicketScreen = ({ navigation, route }) => {
             <View style={st.header}><TouchableOpacity style={st.backBtn} onPress={() => navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary} /></TouchableOpacity><View style={st.headerText}><Text style={st.headerEyebrow}>HERITAGE SLABS</Text><Text style={st.headerTitle}>{type === 'Review' ? 'Write a Review' : 'Contact Support'}</Text></View></View>
             <ScrollView contentContainerStyle={st.formContent} showsVerticalScrollIndicator={false}>
                 <Text style={st.label}>Type</Text>
-                <TouchableOpacity style={st.input} onPress={() => setTypePickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name={type === 'Review' ? 'star-outline' : 'headset'} size={20} color={THEME.indigo} /><Text style={{ fontSize: 15, color: THEME.textPrimary }}>{type}</Text></View></TouchableOpacity>
+                <TouchableOpacity style={st.input} onPress={() => setTypePickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name={type === 'Review' ? 'star-outline' : 'headset'} size={20} color={THEME.gold} /><Text style={{ fontSize: 15, color: THEME.textPrimary }}>{type}</Text></View></TouchableOpacity>
                 <Text style={st.label}>Related Order *</Text>
-                <TouchableOpacity style={st.input} onPress={() => setOrderPickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name="clipboard-list-outline" size={20} color={selectedOrder ? THEME.indigo : THEME.textMuted} /><Text style={{ fontSize: 14, color: selectedOrder ? THEME.textPrimary : THEME.textMuted, flex: 1 }} numberOfLines={1}>{getOrderLabel(selectedOrder)}</Text></View></TouchableOpacity>
+                <TouchableOpacity style={st.input} onPress={() => setOrderPickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name="clipboard-list-outline" size={20} color={selectedOrder ? THEME.gold : THEME.textMuted} /><Text style={{ fontSize: 14, color: selectedOrder ? THEME.textPrimary : THEME.textMuted, flex: 1 }} numberOfLines={1}>{getOrderLabel(selectedOrder)}</Text></View></TouchableOpacity>
                 {type === 'Review' && (
                     <View>
                         <Text style={st.label}>Rating</Text>
@@ -53,13 +53,13 @@ const SubmitTicketScreen = ({ navigation, route }) => {
 
             <Modal visible={typePickerVisible} transparent animationType="fade"><View style={st.modalOverlay}><View style={st.modalContent}>
                 <Text style={st.modalTitle}>Select Type</Text>
-                {TYPES.map(t => (<TouchableOpacity key={t} style={[st.modalOption, type === t && st.modalOptionActive]} onPress={() => { setType(t); setTypePickerVisible(false); }}><MaterialCommunityIcons name={t === 'Review' ? 'star-outline' : 'headset'} size={20} color={type === t ? THEME.indigo : THEME.textSecondary} /><Text style={[st.modalOptionText, type === t && st.modalOptionTextActive]}>{t}</Text></TouchableOpacity>))}
+                {TYPES.map(t => (<TouchableOpacity key={t} style={[st.modalOption, type === t && st.modalOptionActive]} onPress={() => { setType(t); setTypePickerVisible(false); }}><MaterialCommunityIcons name={t === 'Review' ? 'star-outline' : 'headset'} size={20} color={type === t ? THEME.gold : THEME.textSecondary} /><Text style={[st.modalOptionText, type === t && st.modalOptionTextActive]}>{t}</Text></TouchableOpacity>))}
                 <TouchableOpacity style={st.modalCancel} onPress={() => setTypePickerVisible(false)}><Text style={st.modalCancelText}>Cancel</Text></TouchableOpacity>
             </View></View></Modal>
 
             <Modal visible={orderPickerVisible} transparent animationType="fade"><View style={st.modalOverlay}><View style={[st.modalContent, { maxHeight: '60%' }]}>
                 <Text style={st.modalTitle}>Select Order</Text>
-                {loadingOrders ? <ActivityIndicator size="small" color={THEME.indigo} /> : (
+                {loadingOrders ? <ActivityIndicator size="small" color={THEME.gold} /> : (
                     <ScrollView>{orders.length === 0 ? (<Text style={{ textAlign: 'center', color: THEME.textSecondary, paddingVertical: 20 }}>No orders found. Place an order first.</Text>) : orders.map(o => (
                         <TouchableOpacity key={o._id} style={[st.modalOption, selectedOrder === o._id && st.modalOptionActive]} onPress={() => { setSelectedOrder(o._id); setOrderPickerVisible(false); }}>
                             <View style={{ flex: 1 }}><Text style={[st.modalOptionText, selectedOrder === o._id && st.modalOptionTextActive]} numberOfLines={1}>#{o._id.slice(-6).toUpperCase()} — LKR {o.totalPrice?.toLocaleString()}</Text><Text style={{ fontSize: 11, color: THEME.textSecondary }}>{new Date(o.createdAt).toLocaleDateString()} • {o.status}</Text></View>
@@ -76,17 +76,17 @@ const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 14, borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 9 }, headerText: { flex: 1 },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     formContent: { padding: 20, paddingBottom: 40 },
     label: { fontSize: 13, fontWeight: '600', color: THEME.textPrimary, marginBottom: 6, marginTop: 16 },
     input: { backgroundColor: THEME.bgInput, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: THEME.border, fontSize: 15, color: THEME.textPrimary },
-    submitBtn: { backgroundColor: THEME.indigo, padding: 16, borderRadius: 12, marginTop: 28, alignItems: 'center', shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    submitBtn: { backgroundColor: THEME.gold, padding: 16, borderRadius: 12, marginTop: 28, alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
     submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }, modalContent: { backgroundColor: 'rgba(20,20,40,0.95)', borderRadius: 20, padding: 24, width: '85%', borderWidth: 1, borderColor: THEME.border },
     modalTitle: { fontSize: 18, fontWeight: '700', color: THEME.textPrimary, marginBottom: 16, textAlign: 'center' },
     modalOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 10, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.06)' },
-    modalOptionActive: { backgroundColor: THEME.indigoLight, borderWidth: 1, borderColor: THEME.indigo },
-    modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary }, modalOptionTextActive: { color: THEME.indigo, fontWeight: '700' },
+    modalOptionActive: { backgroundColor: THEME.goldLight, borderWidth: 1, borderColor: THEME.gold },
+    modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary }, modalOptionTextActive: { color: THEME.gold, fontWeight: '700' },
     modalCancel: { paddingVertical: 12, marginTop: 4 }, modalCancelText: { fontSize: 15, fontWeight: '600', color: THEME.textSecondary, textAlign: 'center' },
 });
 

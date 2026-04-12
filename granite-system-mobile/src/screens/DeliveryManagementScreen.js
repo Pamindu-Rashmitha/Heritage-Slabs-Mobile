@@ -8,7 +8,7 @@ import api from '../api/axiosConfig';
 import { THEME } from '../theme';
 
 const STATUS_FLOW = ['Scheduled', 'In Transit', 'Completed'];
-const getStatusColor = (s) => { if(s==='Scheduled') return {text:THEME.info,bg:THEME.infoBg}; if(s==='In Transit') return {text:THEME.warning,bg:THEME.warningBg}; if(s==='Completed') return {text:THEME.success,bg:THEME.successBg}; return {text:THEME.textSecondary,bg:'rgba(255,255,255,0.06)'}; };
+const getStatusColor = (s) => { if(s==='Scheduled') return {text:THEME.gold,bg:THEME.goldLight}; if(s==='In Transit') return {text:THEME.warning,bg:THEME.warningBg}; if(s==='Completed') return {text:THEME.success,bg:THEME.successBg}; return {text:THEME.textSecondary,bg:'rgba(255,255,255,0.06)'}; };
 
 const DeliveryRow = ({ item, onUpdateStatus, onDelete }) => {
     const sc = getStatusColor(item.status);
@@ -20,7 +20,7 @@ const DeliveryRow = ({ item, onUpdateStatus, onDelete }) => {
             <Text style={s.subText}>ETA: {new Date(item.expectedDeliveryDate).toLocaleDateString()}</Text>
         </View>
         <View style={s.rowActions}>
-            <TouchableOpacity style={[s.actionBtn,s.updateBtn]} onPress={()=>onUpdateStatus(item)} activeOpacity={0.8}><MaterialCommunityIcons name="swap-horizontal" size={18} color={THEME.indigo}/><Text style={[s.actionText,{color:THEME.indigo}]}>Status</Text></TouchableOpacity>
+            <TouchableOpacity style={[s.actionBtn,s.updateBtn]} onPress={()=>onUpdateStatus(item)} activeOpacity={0.8}><MaterialCommunityIcons name="swap-horizontal" size={18} color={THEME.gold}/><Text style={[s.actionText,{color:THEME.gold}]}>Status</Text></TouchableOpacity>
             <TouchableOpacity style={[s.actionBtn,s.deleteBtn]} onPress={()=>onDelete(item)} activeOpacity={0.8}><MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger}/><Text style={[s.actionText,{color:THEME.danger}]}>Delete</Text></TouchableOpacity>
         </View></View></View>
     );
@@ -58,7 +58,7 @@ const DeliveryManagementScreen = ({ navigation }) => {
         <SafeAreaView style={s.container} edges={['top']}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg}/>
             <View style={s.header}><TouchableOpacity style={s.backBtn} onPress={()=>navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary}/></TouchableOpacity><View style={s.headerText}><Text style={s.headerEyebrow}>ADMIN</Text><Text style={s.headerTitle}>Manage Deliveries</Text></View></View>
-            {loading?(<View style={s.centered}><ActivityIndicator size="large" color={THEME.indigo}/><Text style={s.loadingText}>Loading Deliveries…</Text></View>):(
+            {loading?(<View style={s.centered}><ActivityIndicator size="large" color={THEME.gold}/><Text style={s.loadingText}>Loading Deliveries…</Text></View>):(
                 <><View style={s.statsBar}><Text style={s.statsText}>{deliveries.length} {deliveries.length===1?'Delivery':'Deliveries'}</Text></View>
                 <FlatList data={deliveries} keyExtractor={i=>i._id} renderItem={({item})=>(<DeliveryRow item={item} onUpdateStatus={i=>{setSelectedDelivery(i);setStatusModalVisible(true);}} onDelete={handleDelete}/>)}
                     contentContainerStyle={[s.listContent,deliveries.length===0&&s.listContentEmpty]}
@@ -104,7 +104,7 @@ const s = StyleSheet.create({
     container:{flex:1,backgroundColor:THEME.bg},
     header:{backgroundColor:'rgba(255,255,255,0.04)',paddingHorizontal:20,paddingTop:16,paddingBottom:24,flexDirection:'row',alignItems:'center',gap:14,borderBottomWidth:1,borderBottomColor:THEME.border},
     backBtn:{backgroundColor:'rgba(255,255,255,0.08)',borderRadius:12,padding:9},headerText:{flex:1},
-    headerEyebrow:{fontSize:11,fontWeight:'700',color:THEME.indigo,letterSpacing:2,marginBottom:2},headerTitle:{fontSize:22,fontWeight:'800',color:THEME.textPrimary},
+    headerEyebrow:{fontSize:11,fontWeight:'700',color:THEME.gold,letterSpacing:2,marginBottom:2},headerTitle:{fontSize:22,fontWeight:'800',color:THEME.textPrimary},
     statsBar:{flexDirection:'row',alignItems:'center',paddingHorizontal:20,paddingVertical:12},statsText:{fontSize:13,color:THEME.textSecondary,fontWeight:'500'},
     centered:{flex:1,justifyContent:'center',alignItems:'center'},loadingText:{marginTop:12,color:THEME.textSecondary,fontSize:14},
     listContent:{paddingHorizontal:16,paddingBottom:100},listContentEmpty:{flex:1},
@@ -113,17 +113,17 @@ const s = StyleSheet.create({
     rowName:{fontSize:16,fontWeight:'700',color:THEME.textPrimary,marginBottom:6},rowMeta:{flexDirection:'row',alignItems:'center',gap:8,marginBottom:4},
     badge:{borderRadius:6,paddingHorizontal:8,paddingVertical:3},badgeText:{fontSize:12,fontWeight:'600'},metaText:{fontSize:12,color:THEME.textSecondary},subText:{fontSize:12,color:THEME.textSecondary,marginBottom:2},
     rowActions:{flexDirection:'column',gap:6},actionBtn:{flexDirection:'row',alignItems:'center',gap:4,paddingHorizontal:10,paddingVertical:6,borderRadius:8,minWidth:70,justifyContent:'center'},
-    updateBtn:{backgroundColor:THEME.indigoLight},deleteBtn:{backgroundColor:THEME.dangerBg},actionText:{fontSize:12,fontWeight:'700'},
+    updateBtn:{backgroundColor:THEME.goldLight},deleteBtn:{backgroundColor:THEME.dangerBg},actionText:{fontSize:12,fontWeight:'700'},
     emptyContainer:{flex:1,justifyContent:'center',alignItems:'center',paddingTop:80},emptyTitle:{fontSize:20,fontWeight:'700',color:THEME.textPrimary,marginTop:16},emptySub:{fontSize:14,color:THEME.textSecondary,marginTop:6,textAlign:'center'},
-    fab:{position:'absolute',bottom:28,right:24,width:60,height:60,borderRadius:30,backgroundColor:THEME.indigo,justifyContent:'center',alignItems:'center',shadowColor:THEME.indigo,shadowOffset:{width:0,height:6},shadowOpacity:0.5,shadowRadius:14,elevation:12},
+    fab:{position:'absolute',bottom:28,right:24,width:60,height:60,borderRadius:30,backgroundColor:THEME.gold,justifyContent:'center',alignItems:'center',shadowColor:THEME.gold,shadowOffset:{width:0,height:6},shadowOpacity:0.5,shadowRadius:14,elevation:12},
     modalOverlay:{flex:1,backgroundColor:'rgba(0,0,0,0.65)',justifyContent:'center',alignItems:'center'},modalContent:{backgroundColor:'rgba(20,20,40,0.95)',borderRadius:20,padding:24,width:'80%',borderWidth:1,borderColor:THEME.border},
     modalTitle:{fontSize:18,fontWeight:'700',color:THEME.textPrimary,marginBottom:16,textAlign:'center'},
-    modalOption:{paddingVertical:12,paddingHorizontal:16,borderRadius:10,marginBottom:8,backgroundColor:'rgba(255,255,255,0.06)'},modalOptionActive:{backgroundColor:THEME.indigoLight,borderWidth:1,borderColor:THEME.indigo},
-    modalOptionText:{fontSize:15,fontWeight:'500',color:THEME.textPrimary,textAlign:'center'},modalOptionTextActive:{color:THEME.indigo,fontWeight:'700'},
+    modalOption:{paddingVertical:12,paddingHorizontal:16,borderRadius:10,marginBottom:8,backgroundColor:'rgba(255,255,255,0.06)'},modalOptionActive:{backgroundColor:THEME.goldLight,borderWidth:1,borderColor:THEME.gold},
+    modalOptionText:{fontSize:15,fontWeight:'500',color:THEME.textPrimary,textAlign:'center'},modalOptionTextActive:{color:THEME.gold,fontWeight:'700'},
     modalCancel:{paddingVertical:12,marginTop:4},modalCancelText:{fontSize:15,fontWeight:'600',color:THEME.textSecondary,textAlign:'center'},
     label:{fontSize:13,fontWeight:'600',color:THEME.textPrimary,marginBottom:6,marginTop:12},
     input:{backgroundColor:THEME.bgInput,padding:14,borderRadius:12,borderWidth:1,borderColor:THEME.border,fontSize:15,justifyContent:'center',color:THEME.textPrimary},
-    submitBtn:{backgroundColor:THEME.indigo,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.indigo,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
+    submitBtn:{backgroundColor:THEME.gold,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.gold,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
 });
 
 export default DeliveryManagementScreen;

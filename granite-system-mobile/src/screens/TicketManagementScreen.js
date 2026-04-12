@@ -9,7 +9,7 @@ import { THEME } from '../theme';
 
 const STATUS_FLOW = ['Open','In Progress','Resolved'];
 const getStatusColor = (s) => { if(s==='Open') return {text:THEME.danger,bg:THEME.dangerBg}; if(s==='In Progress') return {text:THEME.warning,bg:THEME.warningBg}; if(s==='Resolved') return {text:THEME.success,bg:THEME.successBg}; return {text:THEME.textSecondary,bg:'rgba(255,255,255,0.06)'}; };
-const getTypeColor = (t) => t==='Review'?{text:THEME.purple,bg:THEME.purpleLight}:{text:THEME.info,bg:THEME.infoBg};
+const getTypeColor = (t) => t==='Review'?{text:THEME.gold,bg:THEME.goldLight}:{text:THEME.slate,bg:THEME.slateLight};
 
 const TicketRow = ({ item, onOpen, onDelete }) => {
     const sc = getStatusColor(item.status); const tc = getTypeColor(item.type);
@@ -23,7 +23,7 @@ const TicketRow = ({ item, onOpen, onDelete }) => {
                 {item.adminReply ? (<View style={st.replyPreview}><MaterialCommunityIcons name="reply" size={12} color={THEME.success} /><Text style={st.replyPreviewText}>Admin replied</Text></View>) : null}
             </View>
             <View style={st.rowActions}>
-                <TouchableOpacity style={[st.actionBtn,st.updateBtn]} onPress={() => onOpen(item)} activeOpacity={0.8}><MaterialCommunityIcons name="eye-outline" size={18} color={THEME.warning} /><Text style={[st.actionText,{color:THEME.warning}]}>View</Text></TouchableOpacity>
+                <TouchableOpacity style={[st.actionBtn,st.updateBtn]} onPress={() => onOpen(item)} activeOpacity={0.8}><MaterialCommunityIcons name="eye-outline" size={18} color={THEME.gold} /><Text style={[st.actionText,{color:THEME.gold}]}>View</Text></TouchableOpacity>
                 <TouchableOpacity style={[st.actionBtn,st.deleteBtn]} onPress={() => onDelete(item)} activeOpacity={0.8}><MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger} /><Text style={[st.actionText,{color:THEME.danger}]}>Delete</Text></TouchableOpacity>
             </View></View>
         </TouchableOpacity>
@@ -44,7 +44,7 @@ const TicketManagementScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={st.header}><TouchableOpacity style={st.backBtn} onPress={() => navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary} /></TouchableOpacity><View style={st.headerText}><Text style={st.headerEyebrow}>ADMIN</Text><Text style={st.headerTitle}>Reviews & Tickets</Text></View></View>
-            {loading ? (<View style={st.centered}><ActivityIndicator size="large" color={THEME.warning} /><Text style={st.loadingText}>Loading Tickets…</Text></View>) : (
+            {loading ? (<View style={st.centered}><ActivityIndicator size="large" color={THEME.gold} /><Text style={st.loadingText}>Loading Tickets…</Text></View>) : (
                 <><View style={st.statsBar}><Text style={st.statsText}>{tickets.length} {tickets.length === 1 ? 'Ticket' : 'Tickets'}</Text></View>
                 <FlatList data={tickets} keyExtractor={i => i._id} renderItem={({ item }) => (<TicketRow item={item} onOpen={openDetail} onDelete={handleDelete} />)}
                     contentContainerStyle={[st.listContent, tickets.length === 0 && st.listContentEmpty]}
@@ -73,7 +73,7 @@ const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 14, borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 9 }, headerText: { flex: 1 },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.warning, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     statsBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 }, statsText: { fontSize: 13, color: THEME.textSecondary, fontWeight: '500' },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' }, loadingText: { marginTop: 12, color: THEME.textSecondary, fontSize: 14 },
     listContent: { paddingHorizontal: 16, paddingBottom: 100 }, listContentEmpty: { flex: 1 },
@@ -85,7 +85,7 @@ const st = StyleSheet.create({
     replyPreview: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, backgroundColor: THEME.successBg, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
     replyPreviewText: { fontSize: 11, fontWeight: '600', color: THEME.success },
     rowActions: { flexDirection: 'column', gap: 6 }, actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, minWidth: 70, justifyContent: 'center' },
-    updateBtn: { backgroundColor: THEME.warningBg }, deleteBtn: { backgroundColor: THEME.dangerBg }, actionText: { fontSize: 12, fontWeight: '700' },
+    updateBtn: { backgroundColor: THEME.goldLight }, deleteBtn: { backgroundColor: THEME.dangerBg }, actionText: { fontSize: 12, fontWeight: '700' },
     emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }, emptyTitle: { fontSize: 20, fontWeight: '700', color: THEME.textPrimary, marginTop: 16 }, emptySub: { fontSize: 14, color: THEME.textSecondary, marginTop: 6, textAlign: 'center' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' },
     detailModalContent: { backgroundColor: 'rgba(20,20,40,0.95)', borderRadius: 20, padding: 24, width: '90%', maxHeight: '80%', borderWidth: 1, borderColor: THEME.border },
@@ -94,8 +94,8 @@ const st = StyleSheet.create({
     detailValue: { fontSize: 14, color: THEME.textPrimary, lineHeight: 20 },
     statusRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
     statusChip: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: THEME.border },
-    statusChipActive: { backgroundColor: THEME.warningBg, borderColor: THEME.warning },
-    statusChipText: { fontSize: 13, fontWeight: '500', color: THEME.textSecondary }, statusChipTextActive: { color: THEME.warning, fontWeight: '700' },
+    statusChipActive: { backgroundColor: THEME.goldLight, borderColor: THEME.gold },
+    statusChipText: { fontSize: 13, fontWeight: '500', color: THEME.textSecondary }, statusChipTextActive: { color: THEME.gold, fontWeight: '700' },
     replyInput: { backgroundColor: THEME.bgInput, borderWidth: 1, borderColor: THEME.border, borderRadius: 12, padding: 14, fontSize: 14, height: 100, textAlignVertical: 'top', marginTop: 4, color: THEME.textPrimary },
     saveBtn: { backgroundColor: THEME.success, padding: 14, borderRadius: 12, marginTop: 20, alignItems: 'center', shadowColor: THEME.success, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 },
     saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },

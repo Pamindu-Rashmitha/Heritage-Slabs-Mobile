@@ -173,7 +173,7 @@ const RegisterScreen = ({ navigation }) => {
                     onPress={() => navigation.navigate('Login')}
                 >
                     <Text style={styles.linkText}>
-                        Already have an account? <Text style={{ color: THEME.purple }}>Log In</Text>
+                        Already have an account? <Text style={{ color: THEME.gold }}>Log In</Text>
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -183,8 +183,8 @@ const RegisterScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg, justifyContent: 'center' },
-    blobTopRight: { position: 'absolute', top: -60, right: -60, width: 220, height: 220, borderRadius: 110, backgroundColor: THEME.blobPurple },
-    blobBottomLeft: { position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: 130, backgroundColor: THEME.blobIndigo },
+    blobTopRight: { position: 'absolute', top: -60, right: -60, width: 220, height: 220, borderRadius: 110, backgroundColor: THEME.blobGold },
+    blobBottomLeft: { position: 'absolute', bottom: -80, left: -80, width: 260, height: 260, borderRadius: 130, backgroundColor: THEME.blobSlate },
     formContainer: { paddingHorizontal: 30 },
     title: { fontSize: 34, fontWeight: '800', color: THEME.textPrimary, marginBottom: 6, textAlign: 'center', letterSpacing: 0.5 },
     subtitle: { fontSize: 16, color: THEME.textSecondary, marginBottom: 40, textAlign: 'center' },
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     passwordContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: THEME.bgInput, borderRadius: 12, marginBottom: 15, borderWidth: 1, borderColor: THEME.border },
     passwordInput: { flex: 1, paddingVertical: 15, paddingHorizontal: 20, fontSize: 16, color: THEME.textPrimary },
     eyeIcon: { paddingHorizontal: 15, justifyContent: 'center', alignItems: 'center' },
-    button: { backgroundColor: THEME.purple, paddingVertical: 15, borderRadius: 12, marginTop: 10, alignItems: 'center', shadowColor: THEME.purple, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+    button: { backgroundColor: THEME.gold, paddingVertical: 15, borderRadius: 12, marginTop: 10, alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
     linkButton: { marginTop: 20, alignItems: 'center' },
     linkText: { color: THEME.textSecondary, fontSize: 15, fontWeight: '600' },

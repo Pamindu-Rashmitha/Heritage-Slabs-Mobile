@@ -8,7 +8,7 @@ import api from '../api/axiosConfig';
 import { THEME } from '../theme';
 
 const getStatusColor = (s) => { if (s === 'Open') return { text: THEME.danger, bg: THEME.dangerBg }; if (s === 'In Progress') return { text: THEME.warning, bg: THEME.warningBg }; if (s === 'Resolved') return { text: THEME.success, bg: THEME.successBg }; return { text: THEME.textSecondary, bg: 'rgba(255,255,255,0.06)' }; };
-const getTypeColor = (t) => t === 'Review' ? { text: THEME.purple, bg: THEME.purpleLight } : { text: THEME.info, bg: THEME.infoBg };
+const getTypeColor = (t) => t === 'Review' ? { text: THEME.gold, bg: THEME.goldLight } : { text: THEME.slate, bg: THEME.slateLight };
 
 const TicketCard = ({ item }) => {
     const sc = getStatusColor(item.status); const tc = getTypeColor(item.type);
@@ -42,7 +42,7 @@ const MyTicketsScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={st.header}><TouchableOpacity style={st.backBtn} onPress={() => navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary} /></TouchableOpacity><View style={st.headerText}><Text style={st.headerEyebrow}>HERITAGE SLABS</Text><Text style={st.headerTitle}>My Tickets</Text></View></View>
-            {loading ? (<View style={st.centered}><ActivityIndicator size="large" color={THEME.indigo} /><Text style={st.loadingText}>Loading Tickets…</Text></View>) : (
+            {loading ? (<View style={st.centered}><ActivityIndicator size="large" color={THEME.gold} /><Text style={st.loadingText}>Loading Tickets…</Text></View>) : (
                 <FlatList data={tickets} keyExtractor={i => i._id} renderItem={({ item }) => <TicketCard item={item} />}
                     contentContainerStyle={[st.listContent, tickets.length === 0 && st.listContentEmpty]}
                     ListEmptyComponent={<View style={st.centered}><MaterialCommunityIcons name="message-text-outline" size={72} color={THEME.textMuted} /><Text style={st.emptyTitle}>No Tickets Yet</Text><Text style={st.emptySub}>Submit a review or support ticket from your orders.</Text></View>}
@@ -57,7 +57,7 @@ const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 14, borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 9 }, headerText: { flex: 1 },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' }, loadingText: { marginTop: 12, color: THEME.textSecondary, fontSize: 14 },
     emptyTitle: { fontSize: 20, fontWeight: '700', color: THEME.textPrimary, marginTop: 16 }, emptySub: { fontSize: 14, color: THEME.textSecondary, marginTop: 6, textAlign: 'center', paddingHorizontal: 40 },
     statsBar: { paddingHorizontal: 4, paddingVertical: 8 }, statsText: { fontSize: 13, color: THEME.textSecondary, fontWeight: '500' },

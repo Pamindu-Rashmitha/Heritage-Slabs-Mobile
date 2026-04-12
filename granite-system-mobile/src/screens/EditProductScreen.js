@@ -126,7 +126,7 @@ const EditProductScreen = ({ route, navigation }) => {
                         ) : (
                             <View style={styles.imagePickerInner}>
                                 <View style={styles.camBadge}>
-                                    <MaterialCommunityIcons name="camera-plus" size={24} color={THEME.indigo} />
+                                    <MaterialCommunityIcons name="camera-plus" size={24} color={THEME.gold} />
                                 </View>
                                 <Text style={styles.imagePickerText}>Tap to Replace Photos</Text>
                             </View>
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
     errorText: { color: THEME.danger, fontSize: 12, marginTop: 5, marginLeft: 5 },
 
     updateButton: {
-        backgroundColor: THEME.indigo,
+        backgroundColor: THEME.gold,
         padding: 16,
         borderRadius: 14,
         marginTop: 10,
         alignItems: 'center',
-        shadowColor: THEME.indigo,
+        shadowColor: THEME.gold,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.4,
         shadowRadius: 12,

@@ -79,7 +79,7 @@ const CartScreen = ({ navigation }) => {
             </View>
 
             {loading ? (
-                <View style={st.centered}><ActivityIndicator size="large" color={THEME.indigo} /><Text style={st.loadingText}>Loading Cart…</Text></View>
+                <View style={st.centered}><ActivityIndicator size="large" color={THEME.gold} /><Text style={st.loadingText}>Loading Cart…</Text></View>
             ) : cart.length === 0 ? (
                 <View style={st.centered}><MaterialCommunityIcons name="cart-off" size={72} color={THEME.textMuted} /><Text style={st.emptyTitle}>Cart is Empty</Text><Text style={st.emptySub}>Browse the catalogue and add some slabs!</Text></View>
             ) : (
@@ -92,13 +92,13 @@ const CartScreen = ({ navigation }) => {
                     <Text style={st.sectionTitle}>Payment Method</Text>
                     <TouchableOpacity style={st.input} onPress={() => setPaymentPickerVisible(true)}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                            <MaterialCommunityIcons name={paymentMethod === 'Card' ? 'credit-card-outline' : 'cash'} size={20} color={THEME.indigo} />
+                            <MaterialCommunityIcons name={paymentMethod === 'Card' ? 'credit-card-outline' : 'cash'} size={20} color={THEME.gold} />
                             <Text style={{ fontSize: 15, color: THEME.textPrimary }}>{paymentMethod}</Text>
                         </View>
                     </TouchableOpacity>
                     {paymentMethod === 'Card' && (
                         <View style={st.cardSection}>
-                            <View style={st.cardHeader}><MaterialCommunityIcons name="shield-check" size={16} color={THEME.indigo} /><Text style={st.cardSecureText}>Secure Payment</Text></View>
+                            <View style={st.cardHeader}><MaterialCommunityIcons name="shield-check" size={16} color={THEME.gold} /><Text style={st.cardSecureText}>Secure Payment</Text></View>
                             <Text style={st.label}>Card Number</Text>
                             <TextInput style={st.input} placeholder="1234 5678 9012 3456" placeholderTextColor={THEME.textMuted} value={cardNumber} onChangeText={setCardNumber} keyboardType="numeric" maxLength={19} />
                             <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -122,7 +122,7 @@ const CartScreen = ({ navigation }) => {
                     <Text style={st.modalTitle}>Payment Method</Text>
                     {['Card', 'Cash on Delivery'].map(m => (
                         <TouchableOpacity key={m} style={[st.modalOption, paymentMethod === m && st.modalOptionActive]} onPress={() => { setPaymentMethod(m); setPaymentPickerVisible(false); }}>
-                            <MaterialCommunityIcons name={m === 'Card' ? 'credit-card-outline' : 'cash'} size={20} color={paymentMethod === m ? THEME.indigo : THEME.textSecondary} />
+                            <MaterialCommunityIcons name={m === 'Card' ? 'credit-card-outline' : 'cash'} size={20} color={paymentMethod === m ? THEME.gold : THEME.textSecondary} />
                             <Text style={[st.modalOptionText, paymentMethod === m && st.modalOptionTextActive]}>{m}</Text>
                         </TouchableOpacity>
                     ))}
@@ -137,7 +137,7 @@ const st = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 14, borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 9 },
-    headerText: { flex: 1 }, headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
+    headerText: { flex: 1 }, headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' }, loadingText: { marginTop: 12, color: THEME.textSecondary, fontSize: 14 },
     emptyTitle: { fontSize: 20, fontWeight: '700', color: THEME.textPrimary, marginTop: 16 }, emptySub: { fontSize: 14, color: THEME.textSecondary, marginTop: 6, textAlign: 'center' },
     scrollContent: { padding: 20, paddingBottom: 40 },
@@ -145,21 +145,21 @@ const st = StyleSheet.create({
     row: { backgroundColor: THEME.bgCard, borderRadius: 12, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: THEME.border },
     rowInfo: { flex: 1 }, rowName: { fontSize: 15, fontWeight: '700', color: THEME.textPrimary, marginBottom: 2 }, priceText: { fontSize: 12, color: THEME.textSecondary },
     qtyRow: { flexDirection: 'row', alignItems: 'center', gap: 8 }, qtyBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.08)', justifyContent: 'center', alignItems: 'center' }, qtyBtnText: { fontSize: 16, fontWeight: '700', color: THEME.textPrimary }, qtyText: { fontSize: 15, fontWeight: '600', color: THEME.textPrimary, minWidth: 20, textAlign: 'center' },
-    itemTotal: { fontSize: 14, fontWeight: '700', color: THEME.indigo, minWidth: 65, textAlign: 'right' },
+    itemTotal: { fontSize: 14, fontWeight: '700', color: THEME.gold, minWidth: 65, textAlign: 'right' },
     removeBtn: { padding: 4 },
     totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: THEME.bgCard, borderRadius: 12, padding: 16, marginTop: 4, marginBottom: 8, borderWidth: 1, borderColor: THEME.border },
-    totalLabel: { fontSize: 16, fontWeight: '600', color: THEME.textPrimary }, totalValue: { fontSize: 20, fontWeight: '800', color: THEME.indigo },
+    totalLabel: { fontSize: 16, fontWeight: '600', color: THEME.textPrimary }, totalValue: { fontSize: 20, fontWeight: '800', color: THEME.gold },
     label: { fontSize: 13, fontWeight: '600', color: THEME.textPrimary, marginBottom: 6, marginTop: 8 },
     input: { backgroundColor: THEME.bgInput, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: THEME.border, fontSize: 15, color: THEME.textPrimary },
-    cardSection: { backgroundColor: THEME.bgCard, borderRadius: 12, padding: 16, marginTop: 8, borderWidth: 1, borderColor: THEME.indigoLight },
-    cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }, cardSecureText: { fontSize: 12, fontWeight: '600', color: THEME.indigo },
-    placeOrderBtn: { backgroundColor: THEME.indigo, padding: 16, borderRadius: 12, marginTop: 24, alignItems: 'center', shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+    cardSection: { backgroundColor: THEME.bgCard, borderRadius: 12, padding: 16, marginTop: 8, borderWidth: 1, borderColor: THEME.goldLight },
+    cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }, cardSecureText: { fontSize: 12, fontWeight: '600', color: THEME.gold },
+    placeOrderBtn: { backgroundColor: THEME.gold, padding: 16, borderRadius: 12, marginTop: 24, alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     placeOrderText: { color: '#fff', fontSize: 16, fontWeight: '700' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }, modalContent: { backgroundColor: 'rgba(20,20,40,0.95)', borderRadius: 20, padding: 24, width: '80%', borderWidth: 1, borderColor: THEME.border },
     modalTitle: { fontSize: 18, fontWeight: '700', color: THEME.textPrimary, marginBottom: 16, textAlign: 'center' },
     modalOption: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 10, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.06)' },
-    modalOptionActive: { backgroundColor: THEME.indigoLight, borderWidth: 1, borderColor: THEME.indigo },
-    modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary }, modalOptionTextActive: { color: THEME.indigo, fontWeight: '700' },
+    modalOptionActive: { backgroundColor: THEME.goldLight, borderWidth: 1, borderColor: THEME.gold },
+    modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary }, modalOptionTextActive: { color: THEME.gold, fontWeight: '700' },
     modalCancel: { paddingVertical: 12, marginTop: 4 }, modalCancelText: { fontSize: 15, fontWeight: '600', color: THEME.textSecondary, textAlign: 'center' },
 });
 

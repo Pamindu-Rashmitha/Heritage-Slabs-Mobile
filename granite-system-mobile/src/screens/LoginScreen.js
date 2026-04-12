@@ -111,7 +111,7 @@ const LoginScreen = ({ navigation }) => {
                     onPress={() => navigation.navigate('Register')}
                 >
                     <Text style={styles.linkText}>
-                        Don't have an account? <Text style={{ color: THEME.indigo }}>Sign Up</Text>
+                        Don't have an account? <Text style={{ color: THEME.gold }}>Sign Up</Text>
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
         width: 220,
         height: 220,
         borderRadius: 110,
-        backgroundColor: THEME.blobIndigo,
+        backgroundColor: THEME.blobGold,
     },
     blobBottomLeft: {
         position: 'absolute',
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
         width: 260,
         height: 260,
         borderRadius: 130,
-        backgroundColor: THEME.blobPurple,
+        backgroundColor: THEME.blobSlate,
     },
     formContainer: {
         paddingHorizontal: 30,
@@ -193,12 +193,12 @@ const styles = StyleSheet.create({
         alignItems: 'center' 
     },
     button: {
-        backgroundColor: THEME.indigo,
+        backgroundColor: THEME.gold,
         paddingVertical: 15,
         borderRadius: 12,
         marginTop: 10,
         alignItems: 'center',
-        shadowColor: THEME.indigo,
+        shadowColor: THEME.gold,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
         shadowRadius: 12,

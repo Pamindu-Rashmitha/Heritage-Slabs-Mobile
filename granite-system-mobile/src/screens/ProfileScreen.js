@@ -60,7 +60,7 @@ const ProfileScreen = ({ navigation }) => {
         return (
             <SafeAreaView style={styles.loadingContainer}>
                 <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
-                <ActivityIndicator size="large" color={THEME.indigo} />
+                <ActivityIndicator size="large" color={THEME.gold} />
                 <Text style={styles.loadingText}>Loading Profile...</Text>
             </SafeAreaView>
         );
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
     backButton: { padding: 5 },
     formContainer: { padding: 20, paddingBottom: 40 },
     avatarContainer: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
-    avatarPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: THEME.indigo, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+    avatarPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: THEME.gold, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     avatarText: { fontSize: 40, fontWeight: '800', color: '#fff' },
     label: { fontSize: 14, fontWeight: '600', color: THEME.textSecondary, marginBottom: 5, marginLeft: 5 },
     input: { backgroundColor: THEME.bgInput, paddingVertical: 15, paddingHorizontal: 20, borderRadius: 12, marginBottom: 20, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
-    updateButton: { backgroundColor: THEME.indigo, paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 10, shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+    updateButton: { backgroundColor: THEME.gold, paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 10, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     updateButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
     deleteButton: { backgroundColor: 'transparent', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 20, borderWidth: 1.5, borderColor: THEME.danger },
     deleteButtonText: { color: THEME.danger, fontSize: 16, fontWeight: '700' },

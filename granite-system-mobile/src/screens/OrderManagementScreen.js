@@ -8,7 +8,7 @@ import api from '../api/axiosConfig';
 import { THEME } from '../theme';
 
 const STATUS_FLOW = ['Pending', 'Processing', 'Shipped', 'Delivered'];
-const getStatusColor = (status) => { switch (status) { case 'Pending': return { text: THEME.warning, bg: THEME.warningBg }; case 'Processing': return { text: THEME.info, bg: THEME.infoBg }; case 'Shipped': return { text: THEME.purple, bg: THEME.purpleLight }; case 'Delivered': return { text: THEME.success, bg: THEME.successBg }; default: return { text: THEME.textSecondary, bg: 'rgba(255,255,255,0.06)' }; } };
+const getStatusColor = (status) => { switch (status) { case 'Pending': return { text: THEME.warning, bg: THEME.warningBg }; case 'Processing': return { text: THEME.info, bg: THEME.infoBg }; case 'Shipped': return { text: THEME.slate, bg: THEME.slateLight }; case 'Delivered': return { text: THEME.success, bg: THEME.successBg }; default: return { text: THEME.textSecondary, bg: 'rgba(255,255,255,0.06)' }; } };
 
 const StatsBar = ({ count }) => (<View style={styles.statsBar}><Text style={styles.statsText}>{count} {count === 1 ? 'Order' : 'Orders'}</Text></View>);
 
@@ -29,7 +29,7 @@ const OrderRow = ({ item, onUpdateStatus, onDelete }) => {
             <Text style={styles.addressText} numberOfLines={1}>{item.shippingAddress}</Text>
         </View>
         <View style={styles.rowActions}>
-            <TouchableOpacity style={[styles.actionBtn, styles.updateBtn]} onPress={() => onUpdateStatus(item)} activeOpacity={0.8}><MaterialCommunityIcons name="swap-horizontal" size={18} color={THEME.indigo} /><Text style={[styles.actionText, { color: THEME.indigo }]}>Status</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.actionBtn, styles.updateBtn]} onPress={() => onUpdateStatus(item)} activeOpacity={0.8}><MaterialCommunityIcons name="swap-horizontal" size={18} color={THEME.gold} /><Text style={[styles.actionText, { color: THEME.gold }]}>Status</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={() => onDelete(item)} activeOpacity={0.8}><MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger} /><Text style={[styles.actionText, { color: THEME.danger }]}>Delete</Text></TouchableOpacity>
         </View></View></View>
     );
@@ -50,7 +50,7 @@ const OrderManagementScreen = ({ navigation }) => {
         <SafeAreaView style={styles.container} edges={['top']}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={styles.header}><TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary} /></TouchableOpacity><View style={styles.headerText}><Text style={styles.headerEyebrow}>ADMIN</Text><Text style={styles.headerTitle}>Manage Orders</Text></View></View>
-            {loading ? (<View style={styles.centered}><ActivityIndicator size="large" color={THEME.indigo} /><Text style={styles.loadingText}>Loading Orders…</Text></View>) : (<><StatsBar count={orders.length} /><FlatList data={orders} keyExtractor={(item) => item._id} renderItem={({ item }) => (<OrderRow item={item} onUpdateStatus={handleUpdateStatus} onDelete={handleDelete} />)} contentContainerStyle={[styles.listContent, orders.length === 0 && styles.listContentEmpty]} ListEmptyComponent={<EmptyState />} refreshing={refreshing} onRefresh={() => fetchOrders(true)} showsVerticalScrollIndicator={false} /></>)}
+            {loading ? (<View style={styles.centered}><ActivityIndicator size="large" color={THEME.gold} /><Text style={styles.loadingText}>Loading Orders…</Text></View>) : (<><StatsBar count={orders.length} /><FlatList data={orders} keyExtractor={(item) => item._id} renderItem={({ item }) => (<OrderRow item={item} onUpdateStatus={handleUpdateStatus} onDelete={handleDelete} />)} contentContainerStyle={[styles.listContent, orders.length === 0 && styles.listContentEmpty]} ListEmptyComponent={<EmptyState />} refreshing={refreshing} onRefresh={() => fetchOrders(true)} showsVerticalScrollIndicator={false} /></>)}
             <Modal visible={statusModalVisible} transparent animationType="fade"><View style={styles.modalOverlay}><View style={styles.modalContent}><Text style={styles.modalTitle}>Update Order Status</Text>{STATUS_FLOW.map((status) => (<TouchableOpacity key={status} style={[styles.modalOption, selectedOrder?.status === status && styles.modalOptionActive]} onPress={() => confirmStatusUpdate(status)}><Text style={[styles.modalOptionText, selectedOrder?.status === status && styles.modalOptionTextActive]}>{status}</Text></TouchableOpacity>))}<TouchableOpacity style={styles.modalCancel} onPress={() => setStatusModalVisible(false)}><Text style={styles.modalCancelText}>Cancel</Text></TouchableOpacity></View></View></Modal>
         </SafeAreaView>
     );
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 14, borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 9 }, headerText: { flex: 1 },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 }, headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     statsBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 }, statsText: { fontSize: 13, color: THEME.textSecondary, fontWeight: '500' },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' }, loadingText: { marginTop: 12, color: THEME.textSecondary, fontSize: 14 },
     listContent: { paddingHorizontal: 16, paddingBottom: 100 }, listContentEmpty: { flex: 1 },
@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
     badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }, badgeText: { fontSize: 12, fontWeight: '600' }, metaText: { fontSize: 12, color: THEME.textSecondary },
     priceText: { fontSize: 13, fontWeight: '600', color: THEME.textPrimary, marginBottom: 2 }, addressText: { fontSize: 12, color: THEME.textSecondary },
     rowActions: { flexDirection: 'column', gap: 6 }, actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, minWidth: 70, justifyContent: 'center' },
-    updateBtn: { backgroundColor: THEME.indigoLight }, deleteBtn: { backgroundColor: THEME.dangerBg }, actionText: { fontSize: 12, fontWeight: '700' },
+    updateBtn: { backgroundColor: THEME.goldLight }, deleteBtn: { backgroundColor: THEME.dangerBg }, actionText: { fontSize: 12, fontWeight: '700' },
     emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }, emptyTitle: { fontSize: 20, fontWeight: '700', color: THEME.textPrimary, marginTop: 16 }, emptySub: { fontSize: 14, color: THEME.textSecondary, marginTop: 6, textAlign: 'center' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }, modalContent: { backgroundColor: 'rgba(20,20,40,0.95)', borderRadius: 20, padding: 24, width: '80%', borderWidth: 1, borderColor: THEME.border },
     modalTitle: { fontSize: 18, fontWeight: '700', color: THEME.textPrimary, marginBottom: 16, textAlign: 'center' },
-    modalOption: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 10, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.06)' }, modalOptionActive: { backgroundColor: THEME.indigoLight, borderWidth: 1, borderColor: THEME.indigo },
-    modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary, textAlign: 'center' }, modalOptionTextActive: { color: THEME.indigo, fontWeight: '700' },
+    modalOption: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: 10, marginBottom: 8, backgroundColor: 'rgba(255,255,255,0.06)' }, modalOptionActive: { backgroundColor: THEME.goldLight, borderWidth: 1, borderColor: THEME.gold },
+    modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary, textAlign: 'center' }, modalOptionTextActive: { color: THEME.gold, fontWeight: '700' },
     modalCancel: { paddingVertical: 12, marginTop: 4 }, modalCancelText: { fontSize: 15, fontWeight: '600', color: THEME.textSecondary, textAlign: 'center' },
 });
 

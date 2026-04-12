@@ -38,7 +38,7 @@ const NavItem = ({ icon, label, color, onPress }) => (
 
 const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateOrders, onNavigateSupport }) => (
     <View style={styles.bottomNav}>
-        <NavItem icon="home-outline" label="Catalog" color={THEME.indigo} onPress={onNavigateCatalog} />
+        <NavItem icon="home-outline" label="Catalog" color={THEME.gold} onPress={onNavigateCatalog} />
         <NavItem icon="cart-outline" label="Cart" color={THEME.navInactive} onPress={onNavigateCart} />
         <NavItem icon="history" label="Orders" color={THEME.navInactive} onPress={onNavigateOrders} />
         <NavItem icon="message-outline" label="My Tickets" color={THEME.navInactive} onPress={onNavigateSupport} />
@@ -168,7 +168,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
                 <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
                 <CatalogHeader isSearchActive={isSearchActive} setIsSearchActive={setIsSearchActive} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onNavigateProfile={() => navigation.navigate('Profile')} />
                 <View style={styles.centered}>
-                    <ActivityIndicator size="large" color={THEME.indigo} />
+                    <ActivityIndicator size="large" color={THEME.gold} />
                     <Text style={styles.loadingText}>Loading Catalogue…</Text>
                 </View>
             </SafeAreaView>
@@ -313,7 +313,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
-    blobTopRight: { position: 'absolute', top: -40, right: -60, width: 200, height: 200, borderRadius: 100, backgroundColor: THEME.blobPurple },
+    blobTopRight: { position: 'absolute', top: -40, right: -60, width: 200, height: 200, borderRadius: 100, backgroundColor: THEME.blobGold },
 
     header: {
         backgroundColor: 'rgba(255,255,255,0.04)',
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         borderBottomWidth: 1, borderBottomColor: THEME.border,
     },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 },
     headerTitle: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary },
     searchBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 10 },
     searchInput: { flex: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, color: THEME.textPrimary, fontSize: 16, marginRight: 10, borderWidth: 1, borderColor: THEME.border },
@@ -345,12 +345,12 @@ const styles = StyleSheet.create({
     metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
     metaChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5, gap: 4 },
     metaChipText: { fontSize: 13, color: THEME.textSecondary, fontWeight: '500' },
-    priceBadge: { backgroundColor: THEME.indigoLight, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-    priceText: { fontSize: 15, fontWeight: '800', color: THEME.indigo },
-    priceSub: { fontSize: 12, fontWeight: '500', color: THEME.indigo },
+    priceBadge: { backgroundColor: THEME.goldLight, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+    priceText: { fontSize: 15, fontWeight: '800', color: THEME.gold },
+    priceSub: { fontSize: 12, fontWeight: '500', color: THEME.gold },
 
     cardActions: { flexDirection: 'row', gap: 10 },
-    addCartBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: THEME.indigo, borderRadius: 10, paddingVertical: 11, shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    addCartBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: THEME.gold, borderRadius: 10, paddingVertical: 11, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
     addCartText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 
     bottomNav: {
@@ -374,8 +374,8 @@ const styles = StyleSheet.create({
     modalTitle: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary, flex: 1 },
     modalRating: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
     modalRatingText: { color: THEME.textPrimary, marginLeft: 6, fontWeight: '700', fontSize: 14 },
-    modalPrice: { fontSize: 20, fontWeight: '800', color: THEME.indigo, marginBottom: 4 },
-    modalPriceSub: { fontSize: 14, fontWeight: '500', color: THEME.indigo },
+    modalPrice: { fontSize: 20, fontWeight: '800', color: THEME.gold, marginBottom: 4 },
+    modalPriceSub: { fontSize: 14, fontWeight: '500', color: THEME.gold },
     modalStock: { fontSize: 14, color: THEME.textSecondary, marginBottom: 24 },
     reviewsSection: { borderTopWidth: 1, borderTopColor: THEME.border, paddingTop: 20, paddingBottom: 20 },
     reviewsTitle: { fontSize: 18, fontWeight: '700', color: THEME.textPrimary, marginBottom: 16 },
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     reviewText: { color: THEME.textSecondary, fontSize: 14, lineHeight: 20, marginBottom: 8 },
     reviewDate: { color: THEME.textMuted, fontSize: 11, textAlign: 'right' },
     modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: THEME.border, backgroundColor: THEME.bgCard },
-    modalAddCartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: THEME.indigo, borderRadius: 12, paddingVertical: 14, shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    modalAddCartBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: THEME.gold, borderRadius: 12, paddingVertical: 14, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
     modalAddCartText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
 

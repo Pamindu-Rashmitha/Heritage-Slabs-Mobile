@@ -1,25 +1,25 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║          Heritage Slabs — Dark Glassmorphism Theme       ║
+ * ║          Heritage Slabs — Premium Stone Theme            ║
  * ╚══════════════════════════════════════════════════════════╝
  *
  * A centralized design-system for the mobile app.
- * Deep charcoal/navy background with vibrant Indigo & Purple
- * accents, frosted-glass cards, and high-contrast typography.
+ * Deep Granite charcoal background with Polished Gold & Slate
+ * accents, frosted-glass cards, and premium typography.
  */
 
 export const THEME = {
     // ── Core Backgrounds ──
-    bg: '#0F0F1E',          // deep charcoal-navy
-    bgCard: 'rgba(255,255,255,0.06)', // frosted glass
-    bgElevated: 'rgba(255,255,255,0.10)', // slightly more opaque
-    bgInput: 'rgba(255,255,255,0.08)',    // input fields
+    bg: '#0F0F0F',          // deep granite-black
+    bgCard: 'rgba(40, 40, 40, 0.4)', // dark frosted glass
+    bgElevated: 'rgba(60, 60, 60, 0.45)', // slightly more opaque
+    bgInput: 'rgba(255,255,255,0.05)',    // input fields
 
     // ── Accent Palette ──
-    indigo: '#6366F1',      // primary accent
-    purple: '#A855F7',      // secondary accent
-    indigoLight: 'rgba(99,102,241,0.15)',
-    purpleLight: 'rgba(168,85,247,0.15)',
+    gold: '#C5A059',        // primary accent (gold veins)
+    slate: '#607D8B',       // secondary accent (cool stone)
+    goldLight: 'rgba(197,160,89,0.15)',
+    slateLight: 'rgba(96,125,139,0.15)',
 
     // ── Status Colors ──
     success: '#34D399',     // emerald-green
@@ -32,26 +32,26 @@ export const THEME = {
     infoBg: 'rgba(96,165,250,0.12)',
 
     // ── Typography ──
-    textPrimary: '#FFFFFF',        // pure white – titles
-    textSecondary: '#94A3B8',      // muted slate-blue – body
+    textPrimary: '#F5F5F5',        // marble-white – titles
+    textSecondary: '#A0A0A0',      // muted stone-grey – body
     textMuted: '#64748B',          // dimmer slate – meta
 
     // ── Borders & Dividers ──
-    border: 'rgba(255,255,255,0.06)',  // ultra-thin glass border
-    borderLight: 'rgba(255,255,255,0.10)',
+    border: 'rgba(197,160,89,0.15)',  // subtle gold glass border
+    borderLight: 'rgba(255,255,255,0.08)',
     divider: 'rgba(255,255,255,0.04)',
 
-    // ── Blobs (decorative blurs) ──
-    blobIndigo: 'rgba(99,102,241,0.18)',
-    blobPurple: 'rgba(168,85,247,0.14)',
+    // ── Blobs (decorative highlights) ──
+    blobGold: 'rgba(197,160,89,0.12)',
+    blobSlate: 'rgba(96,125,139,0.10)',
 
     // ── Shadows ──
-    shadowColor: '#6366F1',
-    shadowColorPurple: '#A855F7',
+    shadowColor: '#C5A059',
+    shadowColorSlate: '#607D8B',
 
     // ── Nav ──
-    navBg: 'rgba(15,15,30,0.95)',
-    navActive: '#6366F1',
+    navBg: 'rgba(15,15,15,0.95)',
+    navActive: '#C5A059',
     navInactive: '#64748B',
 };
 
@@ -70,7 +70,7 @@ export const glassCard = {
  * Standard header bar style used across admin / customer screens.
  */
 export const headerBar = {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(255,255,255,0.02)',
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 24,
@@ -95,14 +95,14 @@ export const glassInput = {
 };
 
 /**
- * Primary gradient-esque button (solid indigo).
+ * Primary gradient-esque button (solid gold).
  */
 export const primaryButton = {
-    backgroundColor: THEME.indigo,
+    backgroundColor: THEME.gold,
     paddingVertical: 15,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: THEME.indigo,
+    shadowColor: THEME.gold,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
     shadowRadius: 12,
@@ -119,10 +119,10 @@ export const fab = {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: THEME.indigo,
+    backgroundColor: THEME.gold,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: THEME.indigo,
+    shadowColor: THEME.gold,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.5,
     shadowRadius: 14,
@@ -134,16 +134,17 @@ export const fab = {
  */
 export const modalOverlay = {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'center',
     alignItems: 'center',
 };
 
 export const modalContent = {
-    backgroundColor: 'rgba(20,20,40,0.95)',
+    backgroundColor: 'rgba(25,25,25,0.95)',
     borderRadius: 20,
     padding: 24,
     width: '85%',
     borderWidth: 1,
     borderColor: THEME.border,
 };
+

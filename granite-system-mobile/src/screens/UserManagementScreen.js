@@ -20,8 +20,8 @@ const UserManagementScreen = ({ navigation }) => {
                     <Text style={styles.userName}>{item.name}</Text>
                     <Text style={styles.userEmail}>{item.email}</Text>
                     <View style={styles.roleBadgeContainer}>
-                        <View style={[styles.roleBadge, { backgroundColor: item.role === 'Admin' ? THEME.indigoLight : THEME.purpleLight }]}>
-                            <Text style={[styles.roleText, { color: item.role === 'Admin' ? THEME.indigo : THEME.purple }]}>{item.role || 'Customer'}</Text>
+                        <View style={[styles.roleBadge, { backgroundColor: item.role === 'Admin' ? THEME.goldLight : THEME.slateLight }]}>
+                            <Text style={[styles.roleText, { color: item.role === 'Admin' ? THEME.gold : THEME.slate }]}>{item.role || 'Customer'}</Text>
                         </View>
                     </View>
                 </View>
@@ -40,7 +40,7 @@ const UserManagementScreen = ({ navigation }) => {
                 <View style={styles.headerTextContainer}><Text style={styles.headerEyebrow}>ADMINISTRATION</Text><Text style={styles.headerTitle}>User Management</Text></View>
             </View>
             {loading && !refreshing ? (
-                <View style={styles.centered}><ActivityIndicator size="large" color={THEME.indigo} /><Text style={styles.loadingText}>Loading users...</Text></View>
+                <View style={styles.centered}><ActivityIndicator size="large" color={THEME.gold} /><Text style={styles.loadingText}>Loading users...</Text></View>
             ) : (
                 <FlatList data={users} keyExtractor={(item) => item._id} renderItem={renderUser} refreshing={refreshing} onRefresh={() => fetchUsers(true)} contentContainerStyle={styles.listContainer}
                     ListEmptyComponent={<View style={styles.centered}><MaterialCommunityIcons name="account-search-outline" size={48} color={THEME.textMuted} /><Text style={styles.emptyText}>No users found.</Text></View>} />
@@ -54,13 +54,13 @@ const styles = StyleSheet.create({
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 15, paddingBottom: 25, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { marginRight: 15, backgroundColor: 'rgba(255,255,255,0.08)', padding: 8, borderRadius: 12 },
     headerTextContainer: { flex: 1 },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 1.5, marginBottom: 2 },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 1.5, marginBottom: 2 },
     headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     listContainer: { padding: 16, paddingBottom: 40 },
     userCard: { backgroundColor: THEME.bgCard, borderRadius: 16, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, borderWidth: 1, borderColor: THEME.border },
     userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-    avatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(99,102,241,0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: THEME.border },
-    avatarText: { fontSize: 22, fontWeight: '800', color: THEME.indigo },
+    avatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(197,160,89,0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 15, borderWidth: 1, borderColor: THEME.border },
+    avatarText: { fontSize: 22, fontWeight: '800', color: THEME.gold },
     textDetails: { flex: 1 },
     userName: { fontSize: 16, fontWeight: '700', color: THEME.textPrimary, marginBottom: 2 },
     userEmail: { fontSize: 13, color: THEME.textSecondary, marginBottom: 6 },

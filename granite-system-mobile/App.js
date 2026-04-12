@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context'; 
+import { THEME } from './src/theme';
 
 // Import all screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -26,26 +27,33 @@ import PurchaseOrderManagementScreen from './src/screens/PurchaseOrderManagement
 
 const Stack = createNativeStackNavigator();
 
-// Dark Glassmorphism navigation theme
-const DarkGlassTheme = {
+// Premium Stone navigation theme
+const StoneTheme = {
   ...DefaultTheme,
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#6366F1',
-    background: '#0F0F1E',
-    card: '#0F0F1E',
-    text: '#FFFFFF',
-    border: 'rgba(255,255,255,0.06)',
-    notification: '#A855F7',
+    primary: THEME.gold,
+    background: THEME.bg,
+    card: THEME.navBg,
+    text: THEME.textPrimary,
+    border: THEME.border,
+    notification: THEME.slate,
   },
 };
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={DarkGlassTheme}>
-        <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F0F1E' }, animation: 'fade_from_bottom' }}>
+      <NavigationContainer theme={StoneTheme}>
+        <Stack.Navigator 
+          initialRouteName="Login" 
+          screenOptions={{ 
+            headerShown: false, 
+            contentStyle: { backgroundColor: THEME.bg }, 
+            animation: 'fade_from_bottom' 
+          }}
+        >
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />

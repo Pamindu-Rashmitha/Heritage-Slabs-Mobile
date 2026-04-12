@@ -18,7 +18,7 @@ const VehicleRow = ({ item, onEdit, onDelete }) => {
         <Text style={st.subText}>Capacity: {item.maxWeightCapacity} kg</Text>
     </View>
     <View style={st.rowActions}>
-        <TouchableOpacity style={[st.actionBtn,st.updateBtn]} onPress={()=>onEdit(item)} activeOpacity={0.8}><MaterialCommunityIcons name="pencil-outline" size={18} color={THEME.purple}/><Text style={[st.actionText,{color:THEME.purple}]}>Edit</Text></TouchableOpacity>
+        <TouchableOpacity style={[st.actionBtn,st.updateBtn]} onPress={()=>onEdit(item)} activeOpacity={0.8}><MaterialCommunityIcons name="pencil-outline" size={18} color={THEME.slate}/><Text style={[st.actionText,{color:THEME.slate}]}>Edit</Text></TouchableOpacity>
         <TouchableOpacity style={[st.actionBtn,st.deleteBtn]} onPress={()=>onDelete(item)} activeOpacity={0.8}><MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger}/><Text style={[st.actionText,{color:THEME.danger}]}>Delete</Text></TouchableOpacity>
     </View></View></View>);
 };
@@ -41,7 +41,7 @@ const VehicleManagementScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={st.container} edges={['top']}><StatusBar barStyle="light-content" backgroundColor={THEME.bg}/>
             <View style={st.header}><TouchableOpacity style={st.backBtn} onPress={()=>navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary}/></TouchableOpacity><View style={st.headerText}><Text style={st.headerEyebrow}>ADMIN</Text><Text style={st.headerTitle}>Manage Vehicles</Text></View></View>
-            {loading?(<View style={st.centered}><ActivityIndicator size="large" color={THEME.purple}/><Text style={st.loadingText}>Loading Vehicles…</Text></View>):(
+            {loading?(<View style={st.centered}><ActivityIndicator size="large" color={THEME.slate}/><Text style={st.loadingText}>Loading Vehicles…</Text></View>):(
                 <><View style={st.statsBar}><Text style={st.statsText}>{vehicles.length} {vehicles.length===1?'Vehicle':'Vehicles'}</Text></View>
                 <FlatList data={vehicles} keyExtractor={i=>i._id} renderItem={({item})=>(<VehicleRow item={item} onEdit={openEdit} onDelete={handleDelete}/>)}
                     contentContainerStyle={[st.listContent,vehicles.length===0&&st.listContentEmpty]}
@@ -72,7 +72,7 @@ const VehicleManagementScreen = ({ navigation }) => {
 
 const st = StyleSheet.create({
     container:{flex:1,backgroundColor:THEME.bg}, header:{backgroundColor:'rgba(255,255,255,0.04)',paddingHorizontal:20,paddingTop:16,paddingBottom:24,flexDirection:'row',alignItems:'center',gap:14,borderBottomWidth:1,borderBottomColor:THEME.border},
-    backBtn:{backgroundColor:'rgba(255,255,255,0.08)',borderRadius:12,padding:9},headerText:{flex:1}, headerEyebrow:{fontSize:11,fontWeight:'700',color:THEME.purple,letterSpacing:2,marginBottom:2},headerTitle:{fontSize:22,fontWeight:'800',color:THEME.textPrimary},
+    backBtn:{backgroundColor:'rgba(255,255,255,0.08)',borderRadius:12,padding:9},headerText:{flex:1}, headerEyebrow:{fontSize:11,fontWeight:'700',color:THEME.slate,letterSpacing:2,marginBottom:2},headerTitle:{fontSize:22,fontWeight:'800',color:THEME.textPrimary},
     statsBar:{flexDirection:'row',alignItems:'center',paddingHorizontal:20,paddingVertical:12},statsText:{fontSize:13,color:THEME.textSecondary,fontWeight:'500'},
     centered:{flex:1,justifyContent:'center',alignItems:'center'},loadingText:{marginTop:12,color:THEME.textSecondary,fontSize:14},
     listContent:{paddingHorizontal:16,paddingBottom:100},listContentEmpty:{flex:1},
@@ -81,17 +81,17 @@ const st = StyleSheet.create({
     rowName:{fontSize:16,fontWeight:'700',color:THEME.textPrimary,marginBottom:6},rowMeta:{flexDirection:'row',alignItems:'center',gap:8,marginBottom:4},
     badge:{borderRadius:6,paddingHorizontal:8,paddingVertical:3},badgeText:{fontSize:12,fontWeight:'600'},metaText:{fontSize:12,color:THEME.textSecondary},subText:{fontSize:12,color:THEME.textSecondary,marginBottom:2},
     rowActions:{flexDirection:'column',gap:6},actionBtn:{flexDirection:'row',alignItems:'center',gap:4,paddingHorizontal:10,paddingVertical:6,borderRadius:8,minWidth:70,justifyContent:'center'},
-    updateBtn:{backgroundColor:THEME.purpleLight},deleteBtn:{backgroundColor:THEME.dangerBg},actionText:{fontSize:12,fontWeight:'700'},
+    updateBtn:{backgroundColor:THEME.slateLight},deleteBtn:{backgroundColor:THEME.dangerBg},actionText:{fontSize:12,fontWeight:'700'},
     emptyContainer:{flex:1,justifyContent:'center',alignItems:'center',paddingTop:80},emptyTitle:{fontSize:20,fontWeight:'700',color:THEME.textPrimary,marginTop:16},emptySub:{fontSize:14,color:THEME.textSecondary,marginTop:6,textAlign:'center'},
-    fab:{position:'absolute',bottom:28,right:24,width:60,height:60,borderRadius:30,backgroundColor:THEME.purple,justifyContent:'center',alignItems:'center',shadowColor:THEME.purple,shadowOffset:{width:0,height:6},shadowOpacity:0.5,shadowRadius:14,elevation:12},
+    fab:{position:'absolute',bottom:28,right:24,width:60,height:60,borderRadius:30,backgroundColor:THEME.slate,justifyContent:'center',alignItems:'center',shadowColor:THEME.slate,shadowOffset:{width:0,height:6},shadowOpacity:0.5,shadowRadius:14,elevation:12},
     modalOverlay:{flex:1,backgroundColor:'rgba(0,0,0,0.65)',justifyContent:'center',alignItems:'center'},modalContent:{backgroundColor:'rgba(20,20,40,0.95)',borderRadius:20,padding:24,width:'80%',borderWidth:1,borderColor:THEME.border},
     modalTitle:{fontSize:18,fontWeight:'700',color:THEME.textPrimary,marginBottom:16,textAlign:'center'},
-    modalOption:{paddingVertical:12,paddingHorizontal:16,borderRadius:10,marginBottom:8,backgroundColor:'rgba(255,255,255,0.06)'},modalOptionActive:{backgroundColor:THEME.purpleLight,borderWidth:1,borderColor:THEME.purple},
-    modalOptionText:{fontSize:15,fontWeight:'500',color:THEME.textPrimary,textAlign:'center'},modalOptionTextActive:{color:THEME.purple,fontWeight:'700'},
+    modalOption:{paddingVertical:12,paddingHorizontal:16,borderRadius:10,marginBottom:8,backgroundColor:'rgba(255,255,255,0.06)'},modalOptionActive:{backgroundColor:THEME.slateLight,borderWidth:1,borderColor:THEME.slate},
+    modalOptionText:{fontSize:15,fontWeight:'500',color:THEME.textPrimary,textAlign:'center'},modalOptionTextActive:{color:THEME.slate,fontWeight:'700'},
     modalCancel:{paddingVertical:12,marginTop:4},modalCancelText:{fontSize:15,fontWeight:'600',color:THEME.textSecondary,textAlign:'center'},
     label:{fontSize:13,fontWeight:'600',color:THEME.textPrimary,marginBottom:6,marginTop:12},
     input:{backgroundColor:THEME.bgInput,padding:14,borderRadius:12,borderWidth:1,borderColor:THEME.border,fontSize:15,justifyContent:'center',color:THEME.textPrimary},
-    submitBtn:{backgroundColor:THEME.purple,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.purple,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
+    submitBtn:{backgroundColor:THEME.slate,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.slate,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
 });
 
 export default VehicleManagementScreen;

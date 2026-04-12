@@ -48,8 +48,8 @@ const ProductRow = ({ item, onUpdate, onDelete }) => {
                 </View>
                 <View style={styles.rowActions}>
                     <TouchableOpacity style={[styles.actionBtn, styles.updateBtn]} onPress={() => onUpdate(item)} activeOpacity={0.8}>
-                        <MaterialCommunityIcons name="pencil-outline" size={18} color={THEME.indigo} />
-                        <Text style={[styles.actionText, { color: THEME.indigo }]}>Edit</Text>
+                        <MaterialCommunityIcons name="pencil-outline" size={18} color={THEME.gold} />
+                        <Text style={[styles.actionText, { color: THEME.gold }]}>Edit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={() => onDelete(item)} activeOpacity={0.8}>
                         <MaterialCommunityIcons name="trash-can-outline" size={18} color={THEME.danger} />
@@ -114,7 +114,7 @@ const ProductManagementScreen = ({ navigation }) => {
                 </View>
             </View>
             {loading ? (
-                <View style={styles.centered}><ActivityIndicator size="large" color={THEME.indigo} /><Text style={styles.loadingText}>Loading Inventory…</Text></View>
+                <View style={styles.centered}><ActivityIndicator size="large" color={THEME.gold} /><Text style={styles.loadingText}>Loading Inventory…</Text></View>
             ) : (
                 <>
                     <StatsBar count={products.length} />
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     header: { backgroundColor: 'rgba(255,255,255,0.04)', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, flexDirection: 'row', alignItems: 'center', gap: 14, borderBottomWidth: 1, borderBottomColor: THEME.border },
     backBtn: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 9 },
     headerText: { flex: 1 },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 },
     headerTitle: { fontSize: 22, fontWeight: '800', color: THEME.textPrimary },
     statsBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, gap: 6 },
     statsText: { fontSize: 13, color: THEME.textSecondary, fontWeight: '500' },
@@ -152,18 +152,18 @@ const styles = StyleSheet.create({
     rowInfo: { flex: 1 },
     rowName: { fontSize: 16, fontWeight: '700', color: THEME.textPrimary, marginBottom: 6 },
     rowMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    badge: { backgroundColor: THEME.indigoLight, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-    badgeText: { fontSize: 12, fontWeight: '600', color: THEME.indigo },
+    badge: { backgroundColor: THEME.goldLight, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+    badgeText: { fontSize: 12, fontWeight: '600', color: THEME.gold },
     stockText: { fontSize: 12, color: THEME.textSecondary },
     rowActions: { flexDirection: 'column', gap: 6 },
     actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, minWidth: 70, justifyContent: 'center' },
-    updateBtn: { backgroundColor: THEME.indigoLight },
+    updateBtn: { backgroundColor: THEME.goldLight },
     deleteBtn: { backgroundColor: THEME.dangerBg },
     actionText: { fontSize: 12, fontWeight: '700' },
     emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
     emptyTitle: { fontSize: 20, fontWeight: '700', color: THEME.textPrimary, marginTop: 16 },
     emptySub: { fontSize: 14, color: THEME.textSecondary, marginTop: 6, textAlign: 'center' },
-    fab: { position: 'absolute', bottom: 28, right: 24, width: 60, height: 60, borderRadius: 30, backgroundColor: THEME.indigo, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.indigo, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 12 },
+    fab: { position: 'absolute', bottom: 28, right: 24, width: 60, height: 60, borderRadius: 30, backgroundColor: THEME.gold, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 14, elevation: 12 },
 });
 
 export default ProductManagementScreen;

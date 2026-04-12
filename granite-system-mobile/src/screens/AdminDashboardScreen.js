@@ -19,10 +19,10 @@ import { THEME, glassCard } from '../theme';
 const API_BASE_URL = 'http://192.168.1.8:5000';
 
 const MANAGEMENT_SECTIONS = [
-    { key: 'products', title: 'Products', icon: 'package-variant-closed', color: THEME.indigo, route: 'ProductManagement' },
+    { key: 'products', title: 'Products', icon: 'package-variant-closed', color: THEME.gold, route: 'ProductManagement' },
     { key: 'orders', title: 'Orders', icon: 'clipboard-list-outline', color: '#60A5FA', route: 'OrderManagement' },
     { key: 'deliveries', title: 'Deliveries', icon: 'truck-delivery-outline', color: THEME.warning, route: 'DeliveryManagement' },
-    { key: 'vehicles', title: 'Vehicles', icon: 'car-outline', color: THEME.purple, route: 'VehicleManagement' },
+    { key: 'vehicles', title: 'Vehicles', icon: 'car-outline', color: THEME.slate, route: 'VehicleManagement' },
     { key: 'suppliers', title: 'Suppliers', icon: 'factory', color: '#F97316', route: 'SupplierManagement' },
     { key: 'tickets', title: 'Support', icon: 'face-agent', color: '#FBBF24', route: 'TicketManagement' },
     { key: 'users', title: 'Users', icon: 'account-group-outline', color: THEME.danger, route: 'UserManagement' },
@@ -53,7 +53,7 @@ const FinanceSection = ({ finance }) => {
     return (
         <View style={[styles.card, styles.financeCard]}>
             <View style={styles.sectionHeader}>
-                <MaterialCommunityIcons name="wallet-outline" size={20} color={THEME.indigo} />
+                <MaterialCommunityIcons name="wallet-outline" size={20} color={THEME.gold} />
                 <Text style={styles.sectionTitle}>Financial Summary</Text>
             </View>
 
@@ -126,7 +126,7 @@ const AdminDashboardScreen = ({ navigation }) => {
     if (loading && !refreshing) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color={THEME.indigo} />
+                <ActivityIndicator size="large" color={THEME.gold} />
             </View>
         );
     }
@@ -153,13 +153,13 @@ const AdminDashboardScreen = ({ navigation }) => {
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStats(); }} tintColor={THEME.indigo} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStats(); }} tintColor={THEME.gold} />}
             >
                 {/* Stats Grid */}
                 <View style={styles.statsGrid}>
                     <StatCard title="Orders" value={stats?.counts?.totalOrders || 0} icon="clipboard-list-outline" color="#3B82F6" />
                     <StatCard title="Active Del." value={stats?.deliveries?.inTransit || 0} icon="truck-delivery-outline" color={THEME.warning} />
-                    <StatCard title="Vehicles" value={stats?.counts?.totalVehicles || 0} icon="car-outline" color={THEME.purple} />
+                    <StatCard title="Vehicles" value={stats?.counts?.totalVehicles || 0} icon="car-outline" color={THEME.slate} />
                     <StatCard title="Help Desk" value={stats?.tickets?.open || 0} icon="face-agent" color={THEME.danger} />
                 </View>
 
@@ -171,7 +171,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                 <View style={styles.quickActionsRow}>
                     {QUICK_ACTIONS.map((action, index) => (
                         <TouchableOpacity key={index} style={[styles.card, styles.quickActionCard]} onPress={() => navigation.navigate(action.route)}>
-                            <MaterialCommunityIcons name={action.icon} size={28} color={THEME.indigo} />
+                            <MaterialCommunityIcons name={action.icon} size={28} color={THEME.gold} />
                             <Text style={styles.quickActionLabel}>{action.label}</Text>
                         </TouchableOpacity>
                     ))}
@@ -196,8 +196,8 @@ const AdminDashboardScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: THEME.bg },
-    blobTopRight: { position: 'absolute', top: -40, right: -60, width: 220, height: 220, borderRadius: 110, backgroundColor: THEME.blobIndigo },
-    blobBottomLeft: { position: 'absolute', bottom: -100, left: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: THEME.blobPurple },
+    blobTopRight: { position: 'absolute', top: -40, right: -40, width: 220, height: 220, borderRadius: 110, backgroundColor: THEME.blobGold },
+    blobBottomLeft: { position: 'absolute', bottom: -100, left: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: THEME.blobSlate },
 
     header: {
         paddingHorizontal: 24,
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: THEME.border,
     },
-    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.indigo, letterSpacing: 2, marginBottom: 2 },
+    headerEyebrow: { fontSize: 11, fontWeight: '700', color: THEME.gold, letterSpacing: 2, marginBottom: 2 },
     headerTitle: { fontSize: 26, fontWeight: '800', color: THEME.textPrimary },
     logoutIcon: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 10 },
 
