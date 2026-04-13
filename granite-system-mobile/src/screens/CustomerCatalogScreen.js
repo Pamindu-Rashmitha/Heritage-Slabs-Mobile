@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, StyleSheet, FlatList, ActivityIndicator, Alert,
     TouchableOpacity, Image, StatusBar, Dimensions, TextInput, Modal, ScrollView
@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import api from '../api/axiosConfig';
 import productService from '../api/productService';
 import { THEME } from '../theme';
@@ -36,17 +37,38 @@ const addToCart = async (product, qty = 1) => {
 const getServerUrl = () => api.defaults.baseURL.replace(/\/api$/, '');
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const NavItem = ({ icon, label, color, onPress }) => (
+const NavItem = ({ icon, label, color, onPress, badge }) => (
     <TouchableOpacity style={styles.navItem} onPress={onPress} activeOpacity={0.7}>
-        <MaterialCommunityIcons name={icon} size={24} color={color} />
+        <View>
+            <MaterialCommunityIcons name={icon} size={24} color={color} />
+            {badge > 0 && (
+                <View style={styles.cartBadge}>
+                    <Text style={styles.cartBadgeText}>{badge > 99 ? '99+' : badge}</Text>
+                </View>
+            )}
+        </View>
         <Text style={[styles.navLabel, { color }]}>{label}</Text>
     </TouchableOpacity>
 );
 
-const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateOrders, onNavigateSupport }) => (
+const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateOrders, onNavigateSupport, cartCount, cartTotal }) => (
     <View style={styles.bottomNav}>
         <NavItem icon="home-outline" label="Catalog" color={THEME.gold} onPress={onNavigateCatalog} />
-        <NavItem icon="cart-outline" label="Cart" color={THEME.navInactive} onPress={onNavigateCart} />
+        <TouchableOpacity style={styles.navItem} onPress={onNavigateCart} activeOpacity={0.7}>
+            <View>
+                <MaterialCommunityIcons name="cart-outline" size={24} color={cartCount > 0 ? THEME.gold : THEME.navInactive} />
+                {cartCount > 0 && (
+                    <View style={styles.cartBadge}>
+                        <Text style={styles.cartBadgeText}>{cartCount > 99 ? '99+' : cartCount}</Text>
+                    </View>
+                )}
+            </View>
+            {cartCount > 0 ? (
+                <Text style={[styles.navLabel, { color: THEME.gold, fontWeight: '700' }]}>LKR {cartTotal.toLocaleString()}</Text>
+            ) : (
+                <Text style={[styles.navLabel, { color: THEME.navInactive }]}>Cart</Text>
+            )}
+        </TouchableOpacity>
         <NavItem icon="history" label="Orders" color={THEME.navInactive} onPress={onNavigateOrders} />
         <NavItem icon="message-outline" label="My Tickets" color={THEME.navInactive} onPress={onNavigateSupport} />
         <NavItem icon="logout" label="Logout" color={THEME.danger} onPress={onLogout} />
@@ -162,8 +184,27 @@ const CustomerCatalogScreen = ({ navigation }) => {
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
+    const [cartTotal, setCartTotal] = useState(0);
 
     useEffect(() => { fetchInventory(); }, []);
+
+    const loadCartInfo = async () => {
+        try {
+            const cartKey = await getUserCartKey();
+            const cartData = await AsyncStorage.getItem(cartKey);
+            const cart = cartData ? JSON.parse(cartData) : [];
+            setCartCount(cart.reduce((sum, item) => sum + (item.qty || 1), 0));
+            setCartTotal(cart.reduce((sum, item) => sum + (item.pricePerSqFt * (item.qty || 1)), 0));
+        } catch { setCartCount(0); setCartTotal(0); }
+    };
+
+    useFocusEffect(useCallback(() => { loadCartInfo(); }, []));
+
+    const handleAddToCart = async (product, qty) => {
+        await addToCart(product, qty);
+        await loadCartInfo();
+    };
 
     const handleLogout = async () => {
         try {
@@ -212,7 +253,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
             <FlatList
                 data={filteredProducts}
                 keyExtractor={(item) => item._id}
-                renderItem={({ item }) => <SlabCard item={item} onAddToCart={addToCart} onPress={(prod) => { setSelectedProduct(prod); setModalVisible(true); }} />}
+                renderItem={({ item }) => <SlabCard item={item} onAddToCart={handleAddToCart} onPress={(prod) => { setSelectedProduct(prod); setModalVisible(true); }} />}
                 contentContainerStyle={styles.listContent}
                 refreshing={refreshing}
                 onRefresh={() => fetchInventory(true)}
@@ -231,6 +272,8 @@ const CustomerCatalogScreen = ({ navigation }) => {
                 onNavigateCart={() => navigation.navigate('Cart')}
                 onNavigateOrders={() => navigation.navigate('MyOrders')}
                 onNavigateSupport={() => navigation.navigate('MyTickets')}
+                cartCount={cartCount}
+                cartTotal={cartTotal}
             />
 
             {/* Product Details Modal */}
@@ -325,7 +368,7 @@ const CustomerCatalogScreen = ({ navigation }) => {
                         )}
                         {selectedProduct && (
                             <View style={styles.modalFooter}>
-                                <TouchableOpacity style={styles.modalAddCartBtn} onPress={() => { addToCart(selectedProduct); setModalVisible(false); }}>
+                                <TouchableOpacity style={styles.modalAddCartBtn} onPress={() => { handleAddToCart(selectedProduct, 1); setModalVisible(false); }}>
                                     <MaterialCommunityIcons name="cart-plus" size={20} color="#fff" />
                                     <Text style={styles.modalAddCartText}>Add to Cart</Text>
                                 </TouchableOpacity>
@@ -390,6 +433,15 @@ const styles = StyleSheet.create({
     },
     navItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, paddingVertical: 4 },
     navLabel: { fontSize: 11, fontWeight: '600' },
+    cartBadge: {
+        position: 'absolute', top: -6, right: -10,
+        backgroundColor: THEME.danger || '#EF4444',
+        borderRadius: 10, minWidth: 18, height: 18,
+        justifyContent: 'center', alignItems: 'center',
+        paddingHorizontal: 4,
+        borderWidth: 1.5, borderColor: THEME.navBg || '#1a1a2e',
+    },
+    cartBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800', textAlign: 'center' },
 
     // Modal Styles
     modalOverlay: { flex: 1, backgroundColor: THEME.bg },
