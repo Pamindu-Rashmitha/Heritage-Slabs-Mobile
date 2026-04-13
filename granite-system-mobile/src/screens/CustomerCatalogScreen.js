@@ -10,9 +10,15 @@ import api from '../api/axiosConfig';
 import productService from '../api/productService';
 import { THEME } from '../theme';
 
+const getUserCartKey = async () => {
+    const userId = await AsyncStorage.getItem('userId');
+    return userId ? `cart_${userId}` : 'cart';
+};
+
 const addToCart = async (product, qty = 1) => {
     try {
-        const cartData = await AsyncStorage.getItem('cart');
+        const cartKey = await getUserCartKey();
+        const cartData = await AsyncStorage.getItem(cartKey);
         let cart = cartData ? JSON.parse(cartData) : [];
         const exists = cart.find(i => i._id === product._id);
         if (exists) {
@@ -22,7 +28,7 @@ const addToCart = async (product, qty = 1) => {
             cart.push({ ...product, qty });
             Alert.alert('Added to Cart! 🛒', `${product.stoneName} has been added to your cart.`);
         }
-        await AsyncStorage.setItem('cart', JSON.stringify(cart));
+        await AsyncStorage.setItem(cartKey, JSON.stringify(cart));
     } catch (e) {
         Alert.alert('Error', 'Could not add to cart.');
     }

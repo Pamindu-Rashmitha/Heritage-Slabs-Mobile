@@ -7,6 +7,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import orderService from '../api/orderService';
 import { THEME } from '../theme';
 
+const getUserCartKey = async () => {
+    const userId = await AsyncStorage.getItem('userId');
+    return userId ? `cart_${userId}` : 'cart';
+};
+
 const CartScreen = ({ navigation }) => {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,8 +25,8 @@ const CartScreen = ({ navigation }) => {
 
     useFocusEffect(useCallback(() => { loadCart(); }, []));
 
-    const loadCart = async () => { setLoading(true); try { const cartData = await AsyncStorage.getItem('cart'); setCart(cartData ? JSON.parse(cartData) : []); } catch (e) { setCart([]); } finally { setLoading(false); } };
-    const saveCart = async (newCart) => { setCart(newCart); await AsyncStorage.setItem('cart', JSON.stringify(newCart)); };
+    const loadCart = async () => { setLoading(true); try { const cartKey = await getUserCartKey(); const cartData = await AsyncStorage.getItem(cartKey); setCart(cartData ? JSON.parse(cartData) : []); } catch (e) { setCart([]); } finally { setLoading(false); } };
+    const saveCart = async (newCart) => { setCart(newCart); const cartKey = await getUserCartKey(); await AsyncStorage.setItem(cartKey, JSON.stringify(newCart)); };
     const removeItem = (productId) => { Alert.alert('Remove Item', 'Remove this item from cart?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => saveCart(cart.filter(i => i._id !== productId)) }]); };
     const updateQty = (productId, delta) => { const updated = cart.map(item => { if (item._id === productId) { const newQty = Math.max(1, (item.qty || 1) + delta); return { ...item, qty: newQty }; } return item; }); saveCart(updated); };
     const getTotal = () => cart.reduce((sum, item) => sum + (item.pricePerSqFt * (item.qty || 1)), 0);
@@ -49,7 +54,8 @@ const CartScreen = ({ navigation }) => {
             const cleanCard = cardNumber.replace(/\s/g, '');
             const body = { products: cart.map(i => ({ productId: i._id, qty: i.qty || 1 })), totalPrice: getTotal(), shippingAddress: shippingAddress.trim(), paymentMethod, cardLastFour: paymentMethod === 'Card' ? cleanCard.slice(-4) : undefined };
             await orderService.create(body);
-            await AsyncStorage.removeItem('cart');
+            const cartKey = await getUserCartKey();
+            await AsyncStorage.removeItem(cartKey);
             setCart([]);
             Alert.alert('Order Placed!', paymentMethod === 'Card' ? 'Payment successful! Your order is confirmed.' : 'Your order has been placed. Pay on delivery.', [{ text: 'View My Orders', onPress: () => navigation.navigate('MyOrders') }, { text: 'OK' }]);
         } catch (e) { Alert.alert('Order Failed', e.response?.data?.message || 'Could not place order.'); }
