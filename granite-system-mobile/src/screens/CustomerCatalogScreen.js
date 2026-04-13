@@ -10,16 +10,16 @@ import api from '../api/axiosConfig';
 import productService from '../api/productService';
 import { THEME } from '../theme';
 
-const addToCart = async (product) => {
+const addToCart = async (product, qty = 1) => {
     try {
         const cartData = await AsyncStorage.getItem('cart');
         let cart = cartData ? JSON.parse(cartData) : [];
         const exists = cart.find(i => i._id === product._id);
         if (exists) {
-            cart = cart.map(i => i._id === product._id ? { ...i, qty: (i.qty || 1) + 1 } : i);
+            cart = cart.map(i => i._id === product._id ? { ...i, qty: (i.qty || 1) + qty } : i);
             Alert.alert('Updated!', `${product.stoneName} quantity increased in cart.`);
         } else {
-            cart.push({ ...product, qty: 1 });
+            cart.push({ ...product, qty });
             Alert.alert('Added to Cart! 🛒', `${product.stoneName} has been added to your cart.`);
         }
         await AsyncStorage.setItem('cart', JSON.stringify(cart));
@@ -48,6 +48,7 @@ const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateO
 );
 
 const SlabCard = ({ item, onAddToCart, onPress }) => {
+    const [qty, setQty] = useState(1);
     const images = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
     const serverUrl = getServerUrl();
     const finalImageUrl = images.length > 0
@@ -64,6 +65,16 @@ const SlabCard = ({ item, onAddToCart, onPress }) => {
             </View>
         );
     };
+
+    const incrementQty = () => {
+        if (!item.stockInSqFt || qty < item.stockInSqFt) {
+            setQty(prev => prev + 1);
+        }
+    };
+
+    const decrementQty = () => setQty(prev => Math.max(1, prev - 1));
+
+    const handleAdd = () => onAddToCart(item, qty);
 
     return (
         <TouchableOpacity style={styles.card} onPress={() => onPress && onPress(item)} activeOpacity={0.9}>
@@ -86,9 +97,18 @@ const SlabCard = ({ item, onAddToCart, onPress }) => {
                     </View>
                 </View>
                 <View style={styles.cardActions}>
-                    <TouchableOpacity style={styles.addCartBtn} onPress={() => onAddToCart(item)} activeOpacity={0.85}>
+                    <View style={styles.qtyActions}>
+                        <TouchableOpacity style={styles.qtyBtn} onPress={decrementQty} activeOpacity={0.7}>
+                            <MaterialCommunityIcons name="minus" size={18} color={THEME.textPrimary} />
+                        </TouchableOpacity>
+                        <Text style={styles.qtyValue}>{qty}</Text>
+                        <TouchableOpacity style={styles.qtyBtn} onPress={incrementQty} activeOpacity={0.7}>
+                            <MaterialCommunityIcons name="plus" size={18} color={THEME.textPrimary} />
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity style={styles.addCartBtn} onPress={handleAdd} activeOpacity={0.85}>
                         <MaterialCommunityIcons name="cart-plus" size={16} color="#fff" />
-                        <Text style={styles.addCartText}>Add to Cart</Text>
+                        <Text style={styles.addCartText}>Add</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -350,8 +370,11 @@ const styles = StyleSheet.create({
     priceText: { fontSize: 15, fontWeight: '800', color: THEME.gold },
     priceSub: { fontSize: 12, fontWeight: '500', color: THEME.gold },
 
-    cardActions: { flexDirection: 'row', gap: 10 },
-    addCartBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: THEME.gold, borderRadius: 10, paddingVertical: 11, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+    cardActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    qtyActions: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 12, paddingHorizontal: 8, height: 38 },
+    qtyBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+    qtyValue: { minWidth: 32, textAlign: 'center', color: THEME.textPrimary, fontWeight: '700', fontSize: 15, marginHorizontal: 8 },
+    addCartBtn: { width: 108, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: THEME.gold, borderRadius: 10, paddingVertical: 11, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
     addCartText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 
     bottomNav: {

@@ -78,23 +78,25 @@ const ProfileScreen = ({ navigation }) => {
             </View>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : null}>
                 <ScrollView contentContainerStyle={styles.formContainer} showsVerticalScrollIndicator={false}>
-                    <View style={styles.avatarContainer}>
-                        <View style={styles.avatarPlaceholder}>
-                            <Text style={styles.avatarText}>{name ? name.charAt(0).toUpperCase() : 'U'}</Text>
+                    <View style={styles.card}>
+                        <View style={styles.avatarContainer}>
+                            <View style={styles.avatarPlaceholder}>
+                                <Text style={styles.avatarText}>{name ? name.charAt(0).toUpperCase() : 'U'}</Text>
+                            </View>
                         </View>
+                        <Text style={styles.label}>Full Name</Text>
+                        <TextInput style={styles.input} placeholder="Your Name" placeholderTextColor={THEME.textMuted} value={name} onChangeText={setName} />
+                        <Text style={styles.label}>Email Address</Text>
+                        <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor={THEME.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                        <Text style={styles.label}>New Password (Optional)</Text>
+                        <TextInput style={styles.input} placeholder="Leave blank to keep current password" placeholderTextColor={THEME.textMuted} value={password} onChangeText={setPassword} secureTextEntry />
+                        <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile} disabled={saving}>
+                            {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.updateButtonText}>Save Changes</Text>}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} disabled={saving}>
+                            <Text style={styles.deleteButtonText}>Delete My Account</Text>
+                        </TouchableOpacity>
                     </View>
-                    <Text style={styles.label}>Full Name</Text>
-                    <TextInput style={styles.input} placeholder="Your Name" placeholderTextColor={THEME.textMuted} value={name} onChangeText={setName} />
-                    <Text style={styles.label}>Email Address</Text>
-                    <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor={THEME.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-                    <Text style={styles.label}>New Password (Optional)</Text>
-                    <TextInput style={styles.input} placeholder="Leave blank to keep current password" placeholderTextColor={THEME.textMuted} value={password} onChangeText={setPassword} secureTextEntry />
-                    <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile} disabled={saving}>
-                        {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.updateButtonText}>Save Changes</Text>}
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} disabled={saving}>
-                        <Text style={styles.deleteButtonText}>Delete My Account</Text>
-                    </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -109,6 +111,18 @@ const styles = StyleSheet.create({
     headerTitle: { fontSize: 20, fontWeight: '800', color: THEME.textPrimary },
     backButton: { padding: 5 },
     formContainer: { padding: 20, paddingBottom: 40 },
+    card: {
+        backgroundColor: 'rgba(30,30,30,0.96)',
+        borderRadius: 28,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        padding: 22,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.18,
+        shadowRadius: 18,
+        elevation: 12,
+    },
     avatarContainer: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
     avatarPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: THEME.gold, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     avatarText: { fontSize: 40, fontWeight: '800', color: '#fff' },
