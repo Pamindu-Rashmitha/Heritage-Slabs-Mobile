@@ -19,6 +19,40 @@ const orderSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    customerPhone: {
+        type: String,
+        required: true,
+    },
+    city: {
+        type: String,
+        required: true,
+    },
+    preferredDeliveryDate: {
+        type: Date,
+        required: true,
+    },
+    unloadingAssistance: {
+        type: Boolean,
+        default: false,
+    },
+    specialInstructions: {
+        type: String,
+        default: '',
+    },
+    subtotal: {
+        type: Number,
+        required: true,
+    },
+    deliveryFee: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
+    tax: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
     status: {
         type: String,
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered'],

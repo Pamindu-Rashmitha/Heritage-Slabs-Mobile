@@ -3,14 +3,33 @@ const Product = require('../models/Product');
 
 const isOnlyNumbers = (str) => /^\d+$/.test(str.trim());
 const addressRegex = /^\d+,\s*.+,\s*.+$/;
+const phoneRegex = /^0\d{9}$/;
+const ALLOWED_CITIES = [
+    'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Galle', 'Matara',
+    'Negombo', 'Jaffna', 'Anuradhapura', 'Kurunegala', 'Other'
+];
 
 const createOrder = async (req, res) => {
     try {
-        const { products, totalPrice, shippingAddress, paymentMethod, cardLastFour } = req.body;
+        const {
+            products,
+            totalPrice,
+            shippingAddress,
+            paymentMethod,
+            cardLastFour,
+            customerPhone,
+            city,
+            preferredDeliveryDate,
+            unloadingAssistance,
+            specialInstructions,
+            subtotal,
+            deliveryFee,
+            tax,
+        } = req.body;
 
         const userId = req.user.id;
 
-        if (!products || !totalPrice || !shippingAddress || !paymentMethod) {
+        if (!products || !totalPrice || !shippingAddress || !paymentMethod || !customerPhone || !city || !preferredDeliveryDate) {
             return res.status(400).json({ message: 'Please add all required fields' });
         }
 
@@ -28,6 +47,44 @@ const createOrder = async (req, res) => {
 
         if (!addressRegex.test(shippingAddress.trim())) {
             return res.status(400).json({ message: 'Address must follow the format: Street Number, Street Name, City (e.g. 123, Main Street, Colombo)' });
+        }
+
+        if (!phoneRegex.test(customerPhone.trim())) {
+            return res.status(400).json({ message: 'Phone number must be 10 digits starting with 0 (e.g. 0771234567)' });
+        }
+
+        if (!ALLOWED_CITIES.includes(city)) {
+            return res.status(400).json({ message: 'Invalid city selection' });
+        }
+
+        const deliveryDate = new Date(preferredDeliveryDate);
+        if (isNaN(deliveryDate.getTime())) {
+            return res.status(400).json({ message: 'Preferred delivery date is invalid' });
+        }
+        const now = new Date();
+        const minDate = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+        const maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        minDate.setHours(0, 0, 0, 0);
+        maxDate.setHours(23, 59, 59, 999);
+        if (deliveryDate < minDate) {
+            return res.status(400).json({ message: 'Preferred delivery date must be at least 2 days from today' });
+        }
+        if (deliveryDate > maxDate) {
+            return res.status(400).json({ message: 'Preferred delivery date cannot be more than 30 days from today' });
+        }
+
+        if (specialInstructions && typeof specialInstructions === 'string' && specialInstructions.length > 500) {
+            return res.status(400).json({ message: 'Special instructions cannot exceed 500 characters' });
+        }
+
+        if (typeof subtotal !== 'number' || subtotal <= 0) {
+            return res.status(400).json({ message: 'Subtotal must be a positive number' });
+        }
+        if (typeof deliveryFee !== 'number' || deliveryFee < 0) {
+            return res.status(400).json({ message: 'Delivery fee must be a non-negative number' });
+        }
+        if (typeof tax !== 'number' || tax < 0) {
+            return res.status(400).json({ message: 'Tax must be a non-negative number' });
         }
 
         const validPaymentMethods = ['Card', 'Cash on Delivery'];
@@ -82,6 +139,14 @@ const createOrder = async (req, res) => {
             products: productIds,
             totalPrice,
             shippingAddress,
+            customerPhone: customerPhone.trim(),
+            city,
+            preferredDeliveryDate: deliveryDate,
+            unloadingAssistance: Boolean(unloadingAssistance),
+            specialInstructions: (specialInstructions || '').trim(),
+            subtotal,
+            deliveryFee,
+            tax,
             paymentMethod,
             paymentStatus,
             cardLastFour: paymentMethod === 'Card' ? cardLastFour : null,

@@ -25,14 +25,16 @@ const OrderCard = ({ item, onReview, onSupport }) => {
                 {item.paymentMethod && <View style={[st.badge, { backgroundColor: 'rgba(255,255,255,0.06)' }]}><Text style={[st.badgeText, { color: THEME.textSecondary }]}>{item.paymentMethod}{item.cardLastFour ? ` •••• ${item.cardLastFour}` : ''}</Text></View>}
             </View>
             <View style={st.totalRow}><Text style={st.totalLabel}>Total</Text><Text style={st.totalValue}>LKR {item.totalPrice?.toLocaleString()}</Text></View>
-            <View style={st.actionRow}>
-                <TouchableOpacity style={st.reviewActionBtn} onPress={() => onReview(item)} activeOpacity={0.8}>
-                    <MaterialCommunityIcons name="star-outline" size={16} color={THEME.gold} /><Text style={st.reviewActionText}>Review</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={st.supportActionBtn} onPress={() => onSupport(item)} activeOpacity={0.8}>
-                    <MaterialCommunityIcons name="headset" size={16} color={THEME.slate} /><Text style={st.supportActionText}>Support</Text>
-                </TouchableOpacity>
-            </View>
+            {item.status === 'Delivered' && (
+                <View style={st.actionRow}>
+                    <TouchableOpacity style={st.reviewActionBtn} onPress={() => onReview(item)} activeOpacity={0.8}>
+                        <MaterialCommunityIcons name="star-outline" size={16} color={THEME.gold} /><Text style={st.reviewActionText}>Review</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={st.supportActionBtn} onPress={() => onSupport(item)} activeOpacity={0.8}>
+                        <MaterialCommunityIcons name="headset" size={16} color={THEME.slate} /><Text style={st.supportActionText}>Support</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 };
