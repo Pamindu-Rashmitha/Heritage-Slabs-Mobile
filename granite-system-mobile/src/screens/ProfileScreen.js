@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, StatusBar } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import authService from '../api/authService';
 import { THEME } from '../theme';
@@ -9,50 +10,43 @@ import { THEME } from '../theme';
 const ProfileScreen = ({ navigation }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [role, setRole] = useState('');
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [userId, setUserId] = useState(null);
 
-    useEffect(() => { fetchUserProfile(); }, []);
-
-    const fetchUserProfile = async () => {
+    const fetchUserProfile = useCallback(async () => {
+        setLoading(true);
         try {
             const storedId = await AsyncStorage.getItem('userId');
             if (!storedId) { Alert.alert('Error', 'User ID not found. Please log in again.'); navigation.replace('Login'); return; }
-            setUserId(storedId);
+            const storedRole = await AsyncStorage.getItem('userRole');
+            setRole(storedRole || '');
             const response = await authService.getUserById(storedId);
-            if (response.data) { setName(response.data.name || ''); setEmail(response.data.email || ''); }
-        } catch (error) { console.error('Error fetching profile:', error); Alert.alert('Error', 'Could not load profile data.'); }
-        finally { setLoading(false); }
-    };
+            if (response.data) {
+                setName(response.data.name || '');
+                setEmail(response.data.email || '');
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            Alert.alert('Error', 'Could not load profile data.');
+        } finally { setLoading(false); }
+    }, [navigation]);
 
-    const handleUpdateProfile = async () => {
-        if (!name || !email) { Alert.alert('Validation Error', 'Name and email cannot be empty'); return; }
-        setSaving(true);
-        try {
-            const payload = { name, email };
-            if (password) { payload.password = password; }
-            const response = await authService.updateUser(userId, payload);
-            if (response.status === 200) { Alert.alert('Success', 'Profile updated successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]); }
-        } catch (error) { console.error('Update error:', error); Alert.alert('Error', error.response?.data?.message || 'Failed to update profile'); }
-        finally { setSaving(false); }
-    };
+    useFocusEffect(useCallback(() => { fetchUserProfile(); }, [fetchUserProfile]));
 
-    const handleDeleteAccount = () => {
-        Alert.alert('Delete Account', 'Are you sure you want to permanently delete your account? This action cannot be undone.', [
+    const handleSignOut = () => {
+        Alert.alert('Sign out', 'Are you sure you want to sign out?', [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Delete', style: 'destructive', onPress: async () => {
-                try {
-                    setSaving(true);
-                    await authService.deleteUser(userId);
-                    await AsyncStorage.removeItem('userToken');
-                    await AsyncStorage.removeItem('userRole');
-                    await AsyncStorage.removeItem('userId');
-                    Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
-                    navigation.replace('Login');
-                } catch (error) { console.error('Delete error:', error); Alert.alert('Error', error.response?.data?.message || 'Failed to delete account.'); setSaving(false); }
-            }},
+            {
+                text: 'Sign out',
+                onPress: async () => {
+                    try {
+                        await AsyncStorage.removeItem('userToken');
+                        await AsyncStorage.removeItem('userRole');
+                        await AsyncStorage.removeItem('userId');
+                        navigation.replace('Login');
+                    } catch (error) { console.error('Error logging out:', error); }
+                },
+            },
         ]);
     };
 
@@ -66,6 +60,8 @@ const ProfileScreen = ({ navigation }) => {
         );
     }
 
+    const roleLabel = (role && String(role)) ? String(role).toUpperCase() : 'USER';
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
@@ -73,32 +69,54 @@ const ProfileScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <MaterialCommunityIcons name="arrow-left" size={24} color={THEME.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>My Profile</Text>
+                <Text style={styles.headerTitle}>Profile</Text>
                 <View style={{ width: 24 }} />
             </View>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : null}>
-                <ScrollView contentContainerStyle={styles.formContainer} showsVerticalScrollIndicator={false}>
-                    <View style={styles.card}>
-                        <View style={styles.avatarContainer}>
-                            <View style={styles.avatarPlaceholder}>
-                                <Text style={styles.avatarText}>{name ? name.charAt(0).toUpperCase() : 'U'}</Text>
-                            </View>
+            <ScrollView contentContainerStyle={styles.formContainer} showsVerticalScrollIndicator={false}>
+                <View style={[styles.card, styles.cardGap]}>
+                    <View style={styles.avatarContainer}>
+                        <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarText}>{name ? name.charAt(0).toUpperCase() : 'U'}</Text>
                         </View>
-                        <Text style={styles.label}>Full Name</Text>
-                        <TextInput style={styles.input} placeholder="Your Name" placeholderTextColor={THEME.textMuted} value={name} onChangeText={setName} />
-                        <Text style={styles.label}>Email Address</Text>
-                        <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor={THEME.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-                        <Text style={styles.label}>New Password (Optional)</Text>
-                        <TextInput style={styles.input} placeholder="Leave blank to keep current password" placeholderTextColor={THEME.textMuted} value={password} onChangeText={setPassword} secureTextEntry />
-                        <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile} disabled={saving}>
-                            {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.updateButtonText}>Save Changes</Text>}
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} disabled={saving}>
-                            <Text style={styles.deleteButtonText}>Delete My Account</Text>
-                        </TouchableOpacity>
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                    <Text style={styles.displayName} numberOfLines={2}>{name || '—'}</Text>
+                    <Text style={styles.displayEmail} numberOfLines={2}>{email || '—'}</Text>
+                    <View style={styles.rolePill}>
+                        <Text style={styles.rolePillText}>{roleLabel}</Text>
+                    </View>
+                </View>
+
+                <View style={[styles.card, styles.cardGap]}>
+                    <TouchableOpacity
+                        style={styles.menuRow}
+                        onPress={() => navigation.navigate('EditProfile')}
+                        activeOpacity={0.7}
+                    >
+                        <View style={styles.menuIconBox}>
+                            <MaterialCommunityIcons name="account-edit-outline" size={22} color={THEME.gold} />
+                        </View>
+                        <Text style={styles.menuLabel}>Edit Profile</Text>
+                        <MaterialCommunityIcons name="chevron-right" size={22} color={THEME.textMuted} />
+                    </TouchableOpacity>
+                    <View style={styles.menuDivider} />
+                    <TouchableOpacity
+                        style={styles.menuRow}
+                        onPress={() => navigation.navigate('HelpSupport')}
+                        activeOpacity={0.7}
+                    >
+                        <View style={styles.menuIconBox}>
+                            <MaterialCommunityIcons name="help-circle-outline" size={22} color={THEME.gold} />
+                        </View>
+                        <Text style={styles.menuLabel}>Help & Support</Text>
+                        <MaterialCommunityIcons name="chevron-right" size={22} color={THEME.textMuted} />
+                    </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity style={styles.deleteButton} onPress={handleSignOut} activeOpacity={0.8}>
+                    <MaterialCommunityIcons name="logout" size={22} color={THEME.danger} style={styles.signOutIcon} />
+                    <Text style={styles.deleteButtonText}>Sign Out</Text>
+                </TouchableOpacity>
+            </ScrollView>
         </SafeAreaView>
     );
 };
@@ -123,15 +141,21 @@ const styles = StyleSheet.create({
         shadowRadius: 18,
         elevation: 12,
     },
+    cardGap: { marginBottom: 16 },
     avatarContainer: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
     avatarPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: THEME.gold, justifyContent: 'center', alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     avatarText: { fontSize: 40, fontWeight: '800', color: '#fff' },
-    label: { fontSize: 14, fontWeight: '600', color: THEME.textSecondary, marginBottom: 5, marginLeft: 5 },
-    input: { backgroundColor: THEME.bgInput, paddingVertical: 15, paddingHorizontal: 20, borderRadius: 12, marginBottom: 20, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
-    updateButton: { backgroundColor: THEME.gold, paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 10, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
-    updateButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-    deleteButton: { backgroundColor: 'transparent', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 20, borderWidth: 1.5, borderColor: THEME.danger },
+    displayName: { fontSize: 20, fontWeight: '800', color: THEME.textPrimary, textAlign: 'center' },
+    displayEmail: { fontSize: 15, color: THEME.textSecondary, textAlign: 'center', marginTop: 6 },
+    rolePill: { alignSelf: 'center', marginTop: 16, backgroundColor: THEME.goldLight, paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, borderWidth: 1, borderColor: THEME.border },
+    rolePillText: { fontSize: 12, fontWeight: '800', color: THEME.gold, letterSpacing: 0.5 },
+    menuRow: { flexDirection: 'row', alignItems: 'center' },
+    menuIconBox: { width: 40, height: 40, borderRadius: 10, backgroundColor: THEME.goldLight, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+    menuLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: THEME.textPrimary },
+    menuDivider: { height: 1, backgroundColor: THEME.divider, marginVertical: 14, marginLeft: 54 },
+    deleteButton: { backgroundColor: 'transparent', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 20, borderWidth: 1.5, borderColor: THEME.danger, flexDirection: 'row', justifyContent: 'center' },
     deleteButtonText: { color: THEME.danger, fontSize: 16, fontWeight: '700' },
+    signOutIcon: { marginRight: 8 },
 });
 
 export default ProfileScreen;

@@ -36,6 +36,7 @@ const addToCart = async (product, qty = 1) => {
 };
 const getServerUrl = () => api.defaults.baseURL.replace(/\/api$/, '');
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CATALOG_CARD_IMAGE_WIDTH = SCREEN_WIDTH - 32;
 
 const NavItem = ({ icon, label, color, onPress, badge }) => (
     <TouchableOpacity style={styles.navItem} onPress={onPress} activeOpacity={0.7}>
@@ -75,8 +76,14 @@ const BottomNavBar = ({ onLogout, onNavigateCatalog, onNavigateCart, onNavigateO
     </View>
 );
 
+const buildImageUri = (path, serverUrl) => {
+    if (!path) return '';
+    return path.startsWith('http') ? path : `${serverUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 const SlabCard = ({ item, onAddToCart, onPress }) => {
     const [qty, setQty] = useState(1);
+    const [cardImageIndex, setCardImageIndex] = useState(0);
     const images = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
     const serverUrl = getServerUrl();
     const finalImageUrl = images.length > 0
@@ -106,7 +113,36 @@ const SlabCard = ({ item, onAddToCart, onPress }) => {
 
     return (
         <TouchableOpacity style={styles.card} onPress={() => onPress && onPress(item)} activeOpacity={0.9}>
-            <Image source={{ uri: finalImageUrl }} style={styles.slabImage} resizeMode="cover" />
+            {images.length > 1 ? (
+                <View>
+                    <ScrollView
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        scrollEventThrottle={16}
+                        onMomentumScrollEnd={(e) => {
+                            const i = Math.round(e.nativeEvent.contentOffset.x / CATALOG_CARD_IMAGE_WIDTH);
+                            setCardImageIndex(i);
+                        }}
+                    >
+                        {images.map((img, index) => (
+                            <Image
+                                key={index}
+                                source={{ uri: buildImageUri(img, serverUrl) }}
+                                style={styles.slabImagePaged}
+                                resizeMode="cover"
+                            />
+                        ))}
+                    </ScrollView>
+                    <View style={styles.imageDotsRow} pointerEvents="none">
+                        {images.map((_, i) => (
+                            <View key={i} style={[styles.imageDot, i === cardImageIndex && styles.imageDotActive]} />
+                        ))}
+                    </View>
+                </View>
+            ) : (
+                <Image source={{ uri: finalImageUrl }} style={styles.slabImage} resizeMode="cover" />
+            )}
             <View style={styles.categoryTag}>
                 <Text style={styles.categoryTagText}>Granite Slab</Text>
             </View>
@@ -184,10 +220,14 @@ const CustomerCatalogScreen = ({ navigation }) => {
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalImageIndex, setModalImageIndex] = useState(0);
     const [cartCount, setCartCount] = useState(0);
     const [cartTotal, setCartTotal] = useState(0);
 
     useEffect(() => { fetchInventory(); }, []);
+    useEffect(() => {
+        if (selectedProduct) setModalImageIndex(0);
+    }, [selectedProduct?._id]);
 
     const loadCartInfo = async () => {
         try {
@@ -288,40 +328,54 @@ const CustomerCatalogScreen = ({ navigation }) => {
                         {selectedProduct && (
                             <ScrollView showsVerticalScrollIndicator={false}>
                                 <View>
-                                    <ScrollView
-                                        horizontal
-                                        pagingEnabled
-                                        showsHorizontalScrollIndicator={false}
-                                        style={styles.modalCarousel}
-                                    >
-                                        {(selectedProduct.imageUrls && selectedProduct.imageUrls.length > 0 
-                                            ? selectedProduct.imageUrls 
-                                            : (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : [])
-                                        ).map((img, index) => {
-                                            const serverUrl = getServerUrl();
-                                            const uri = img.startsWith('http') ? img : `${serverUrl}${img.startsWith('/') ? '' : '/'}${img}`;
-                                            return (
+                                    <View style={styles.modalCarouselWrap}>
+                                        <ScrollView
+                                            horizontal
+                                            pagingEnabled
+                                            showsHorizontalScrollIndicator={false}
+                                            style={styles.modalCarousel}
+                                            scrollEventThrottle={16}
+                                            onMomentumScrollEnd={(e) => {
+                                                const i = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                                                setModalImageIndex(i);
+                                            }}
+                                        >
+                                            {(selectedProduct.imageUrls && selectedProduct.imageUrls.length > 0
+                                                ? selectedProduct.imageUrls
+                                                : (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : [])
+                                            ).map((img, index) => {
+                                                const serverUrl = getServerUrl();
+                                                const uri = buildImageUri(img, serverUrl);
+                                                return (
+                                                    <Image
+                                                        key={index}
+                                                        source={{ uri }}
+                                                        style={styles.modalImage}
+                                                        resizeMode="cover"
+                                                    />
+                                                );
+                                            })}
+                                            {(!selectedProduct.imageUrls || selectedProduct.imageUrls.length === 0) && !selectedProduct.imageUrl && (
                                                 <Image
-                                                    key={index}
-                                                    source={{ uri }}
+                                                    source={{ uri: 'https://via.placeholder.com/800x600?text=No+Image' }}
                                                     style={styles.modalImage}
                                                     resizeMode="cover"
                                                 />
+                                            )}
+                                        </ScrollView>
+                                        {(() => {
+                                            const urls = selectedProduct.imageUrls && selectedProduct.imageUrls.length > 0
+                                                ? selectedProduct.imageUrls
+                                                : (selectedProduct.imageUrl ? [selectedProduct.imageUrl] : []);
+                                            if (urls.length <= 1) return null;
+                                            return (
+                                                <View style={styles.modalImageDotsRow} pointerEvents="none">
+                                                    {urls.map((_, i) => (
+                                                        <View key={i} style={[styles.imageDot, i === modalImageIndex && styles.imageDotActive]} />
+                                                    ))}
+                                                </View>
                                             );
-                                        })}
-                                        {(!selectedProduct.imageUrls || selectedProduct.imageUrls.length === 0) && !selectedProduct.imageUrl && (
-                                            <Image
-                                                source={{ uri: 'https://via.placeholder.com/800x600?text=No+Image' }}
-                                                style={styles.modalImage}
-                                                resizeMode="cover"
-                                            />
-                                        )}
-                                    </ScrollView>
-                                    <View style={styles.carouselBadge}>
-                                        <MaterialCommunityIcons name="image-multiple" size={12} color="#fff" />
-                                        <Text style={styles.carouselBadgeText}>
-                                            {(selectedProduct.imageUrls?.length || (selectedProduct.imageUrl ? 1 : 0))} Photos
-                                        </Text>
+                                        })()}
                                     </View>
                                 </View>
                                 <TouchableOpacity style={styles.closeModalBtn} onPress={() => { setModalVisible(false); setSelectedProduct(null); }}>
@@ -339,8 +393,21 @@ const CustomerCatalogScreen = ({ navigation }) => {
                                         </View>
                                     </View>
 
-                                    <Text style={styles.modalPrice}>LKR {selectedProduct.pricePerSqFt}<Text style={styles.modalPriceSub}>/SqFt</Text></Text>
-                                    <Text style={styles.modalStock}>Available Stock: {selectedProduct.stockInSqFt} SqFt</Text>
+                                    <View style={styles.modalPriceRow}>
+                                        <Text style={styles.modalPrice} numberOfLines={2}>
+                                            LKR {selectedProduct.pricePerSqFt}
+                                            <Text style={styles.modalPriceSub}>/SqFt</Text>
+                                        </Text>
+                                        <View style={styles.modalStockBlock}>
+                                            <Text style={styles.modalStockLabel}>Available stock</Text>
+                                            <View style={styles.modalStockValueRow}>
+                                                <MaterialCommunityIcons name="layers-outline" size={16} color={THEME.gold} style={styles.modalStockIcon} />
+                                                <Text style={styles.modalStockValue}>
+                                                    {selectedProduct.stockInSqFt} SqFt
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
 
                                     <View style={styles.reviewsSection}>
                                         <Text style={styles.reviewsTitle}>Customer Reviews</Text>
@@ -408,6 +475,10 @@ const styles = StyleSheet.create({
         borderWidth: 1, borderColor: THEME.border,
     },
     slabImage: { width: '100%', height: 200, backgroundColor: 'rgba(255,255,255,0.04)' },
+    slabImagePaged: { width: CATALOG_CARD_IMAGE_WIDTH, height: 200, backgroundColor: 'rgba(255,255,255,0.04)' },
+    imageDotsRow: { position: 'absolute', bottom: 10, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+    imageDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
+    imageDotActive: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
     categoryTag: { position: 'absolute', top: 14, left: 14, backgroundColor: 'rgba(15,15,30,0.75)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: THEME.border },
     categoryTagText: { color: THEME.textPrimary, fontSize: 11, fontWeight: '600', letterSpacing: 0.5 },
     cardContent: { padding: 16 },
@@ -446,19 +517,37 @@ const styles = StyleSheet.create({
     // Modal Styles
     modalOverlay: { flex: 1, backgroundColor: THEME.bg },
     modalContent: { flex: 1, backgroundColor: THEME.bgCard, borderWidth: 0, borderColor: THEME.border },
+    modalCarouselWrap: { position: 'relative' },
     modalCarousel: { height: 300 },
     modalImage: { width: SCREEN_WIDTH, height: 300 },
-    carouselBadge: { position: 'absolute', bottom: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4, flexDirection: 'row', alignItems: 'center', gap: 6 },
-    carouselBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+    modalImageDotsRow: { position: 'absolute', bottom: 14, left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
     closeModalBtn: { position: 'absolute', top: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: 6 },
     modalBody: { padding: 20 },
     modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
     modalTitle: { fontSize: 24, fontWeight: '800', color: THEME.textPrimary, flex: 1 },
     modalRating: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
     modalRatingText: { color: THEME.textPrimary, marginLeft: 6, fontWeight: '700', fontSize: 14 },
-    modalPrice: { fontSize: 20, fontWeight: '800', color: THEME.gold, marginBottom: 4 },
+    modalPriceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
+        gap: 16,
+    },
+    modalPrice: { flex: 1, minWidth: 0, fontSize: 20, fontWeight: '800', color: THEME.gold },
     modalPriceSub: { fontSize: 14, fontWeight: '500', color: THEME.gold },
-    modalStock: { fontSize: 14, color: THEME.textSecondary, marginBottom: 24 },
+    modalStockBlock: { alignItems: 'flex-end', flexShrink: 0 },
+    modalStockLabel: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: THEME.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: 0.6,
+        marginBottom: 4,
+    },
+    modalStockValueRow: { flexDirection: 'row', alignItems: 'center' },
+    modalStockIcon: { marginRight: 4, opacity: 0.9 },
+    modalStockValue: { fontSize: 16, fontWeight: '800', color: THEME.textPrimary },
     reviewsSection: { borderTopWidth: 1, borderTopColor: THEME.border, paddingTop: 20, paddingBottom: 20 },
     reviewsTitle: { fontSize: 18, fontWeight: '700', color: THEME.textPrimary, marginBottom: 16 },
     noReviewsText: { color: THEME.textSecondary, fontStyle: 'italic', fontSize: 14 },

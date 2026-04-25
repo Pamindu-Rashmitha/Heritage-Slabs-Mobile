@@ -14,6 +14,8 @@ import AddProductScreen from './src/screens/AddProductScreen';
 import ProductManagementScreen from './src/screens/ProductManagementScreen';
 import EditProductScreen from './src/screens/EditProductScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
+import HelpSupportScreen from './src/screens/HelpSupportScreen';
 import UserManagementScreen from './src/screens/UserManagementScreen';
 import OrderManagementScreen from './src/screens/OrderManagementScreen';
 import DeliveryManagementScreen from './src/screens/DeliveryManagementScreen';
@@ -69,6 +71,8 @@ export default function App() {
           <Stack.Screen name="ProductManagement" component={ProductManagementScreen} />
           <Stack.Screen name="CustomerCatalog" component={CustomerCatalogScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
           <Stack.Screen name="UserManagement" component={UserManagementScreen} />
           <Stack.Screen name="OrderManagement" component={OrderManagementScreen} />
           <Stack.Screen name="DeliveryManagement" component={DeliveryManagementScreen} />
