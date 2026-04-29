@@ -57,7 +57,10 @@ const MyOrdersScreen = ({ navigation }) => {
         <SafeAreaView style={st.container} edges={['top']}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={st.header}>
-                <TouchableOpacity style={st.backBtn} onPress={() => navigation.goBack()}><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary} /></TouchableOpacity>
+                <TouchableOpacity
+                    style={st.backBtn}
+                    onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
+                ><MaterialCommunityIcons name="arrow-left" size={22} color={THEME.textPrimary} /></TouchableOpacity>
                 <View style={st.headerText}><Text style={st.headerEyebrow}>HERITAGE SLABS</Text><Text style={st.headerTitle}>My Orders</Text></View>
             </View>
             {loading ? (

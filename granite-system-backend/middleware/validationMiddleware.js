@@ -75,13 +75,16 @@ const deliveryValidation = [
         .isISO8601().withMessage('Expected delivery date must be a valid date')
 ];
 
+const LICENSE_PLATE_PATTERN = /^[A-Za-z]{2,3}-\d{4}$/;
+const MAX_VEHICLE_CAPACITY_KG = 3500;
+
 const vehicleValidation = [
-    body('licensePlate').notEmpty().withMessage('License plate is required')
-        .isLength({ min: 2 }).withMessage('License plate must be at least 2 characters'),
+    body('licensePlate').trim().notEmpty().withMessage('License plate is required')
+        .matches(LICENSE_PLATE_PATTERN).withMessage('License plate must be 2 or 3 letters, a hyphen (-), then 4 digits (e.g. AB-1234)'),
     body('vehicleType').notEmpty().withMessage('Vehicle type is required')
         .isString().withMessage('Vehicle type must be a text string')
         .custom(notOnlyNumbers).withMessage('Vehicle type cannot contain only numbers'),
-    body('maxWeightCapacity').isFloat({ gt: 0 }).withMessage('Max weight capacity must be a positive number')
+    body('maxWeightCapacity').isFloat({ gt: 0, max: MAX_VEHICLE_CAPACITY_KG }).withMessage(`Max weight capacity must be greater than 0 and at most ${MAX_VEHICLE_CAPACITY_KG} kg`)
 ];
 
 const supplierValidation = [

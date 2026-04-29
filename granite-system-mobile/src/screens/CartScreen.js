@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, StatusBar, Modal, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator, Alert, StatusBar, Modal, ScrollView, Switch, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -29,18 +30,6 @@ const CITIES = [
 const UNLOADING_ASSIST_FEE = 2500;
 const VAT_RATE = 0.18;
 const MAX_INSTRUCTIONS_LEN = 500;
-
-const buildDateOptions = () => {
-    const options = [];
-    const today = new Date();
-    for (let i = 2; i <= 30; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
-        d.setHours(9, 0, 0, 0);
-        options.push(d);
-    }
-    return options;
-};
 
 const formatDate = (d) => {
     if (!d) return '';
@@ -75,7 +64,49 @@ const CartScreen = ({ navigation }) => {
     const removeItem = (productId) => { Alert.alert('Remove Item', 'Remove this item from cart?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => saveCart(cart.filter(i => i._id !== productId)) }]); };
     const updateQty = (productId, delta) => { const updated = cart.map(item => { if (item._id === productId) { const newQty = Math.max(1, (item.qty || 1) + delta); return { ...item, qty: newQty }; } return item; }); saveCart(updated); };
 
-    const dateOptions = useMemo(() => buildDateOptions(), []);
+    const minDeliveryDate = useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 2);
+        d.setHours(9, 0, 0, 0);
+        return d;
+    }, []);
+    const maxDeliveryDate = useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 30);
+        d.setHours(9, 0, 0, 0);
+        return d;
+    }, []);
+
+    const webDateOptions = useMemo(() => {
+        if (Platform.OS !== 'web') return [];
+        const options = [];
+        const today = new Date();
+        for (let i = 2; i <= 30; i++) {
+            const d = new Date(today);
+            d.setDate(today.getDate() + i);
+            d.setHours(9, 0, 0, 0);
+            options.push(d);
+        }
+        return options;
+    }, []);
+
+    const onAndroidDeliveryDateChange = useCallback((event, selectedDate) => {
+        setDatePickerVisible(false);
+        if (event.type === 'dismissed') return;
+        if (selectedDate) {
+            const x = new Date(selectedDate);
+            x.setHours(9, 0, 0, 0);
+            setPreferredDate(x);
+        }
+    }, []);
+
+    const onIOSDeliveryDateChange = useCallback((_, selectedDate) => {
+        if (selectedDate) {
+            const x = new Date(selectedDate);
+            x.setHours(9, 0, 0, 0);
+            setPreferredDate(x);
+        }
+    }, []);
 
     const subtotal = useMemo(
         () => cart.reduce((sum, item) => sum + (item.pricePerSqFt * (item.qty || 1)), 0),
@@ -102,10 +133,11 @@ const CartScreen = ({ navigation }) => {
         if (!city) { Alert.alert('Validation Error', 'Please select a delivery city.'); return false; }
 
         if (!preferredDate) { Alert.alert('Validation Error', 'Please select a preferred delivery date.'); return false; }
-        const now = new Date();
-        const minDate = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+        const minDate = new Date(minDeliveryDate);
         minDate.setHours(0, 0, 0, 0);
-        if (preferredDate < minDate) { Alert.alert('Validation Error', 'Delivery date must be at least 2 days from today.'); return false; }
+        const chosen = new Date(preferredDate);
+        chosen.setHours(0, 0, 0, 0);
+        if (chosen < minDate) { Alert.alert('Validation Error', 'Delivery date must be at least 2 days from today.'); return false; }
 
         if (specialInstructions && specialInstructions.length > MAX_INSTRUCTIONS_LEN) {
             Alert.alert('Validation Error', `Special instructions cannot exceed ${MAX_INSTRUCTIONS_LEN} characters.`); return false;
@@ -150,7 +182,7 @@ const CartScreen = ({ navigation }) => {
             Alert.alert(
                 'Order Placed!',
                 paymentMethod === 'Card' ? 'Payment successful! Your order is confirmed.' : 'Your order has been placed. Pay on delivery.',
-                [{ text: 'View My Orders', onPress: () => navigation.navigate('MyOrders') }, { text: 'OK' }]
+                [{ text: 'View My Orders', onPress: () => navigation.navigate('CustomerTabs', { screen: 'MyOrders' }) }, { text: 'OK' }]
             );
         } catch (e) { Alert.alert('Order Failed', e.response?.data?.message || 'Could not place order.'); }
         finally { setPlacing(false); }
@@ -322,26 +354,61 @@ const CartScreen = ({ navigation }) => {
                 </View></View>
             </Modal>
 
-            <Modal visible={datePickerVisible} transparent animationType="fade">
-                <View style={st.modalOverlay}><View style={st.modalContent}>
-                    <Text style={st.modalTitle}>Preferred Delivery Date</Text>
-                    <ScrollView style={{ maxHeight: 360 }}>
-                        {dateOptions.map(d => {
-                            const isActive = preferredDate && preferredDate.toDateString() === d.toDateString();
-                            return (
-                                <TouchableOpacity
-                                    key={d.toISOString()}
-                                    style={[st.modalOption, isActive && st.modalOptionActive]}
-                                    onPress={() => { setPreferredDate(d); setDatePickerVisible(false); }}
-                                >
-                                    <MaterialCommunityIcons name="calendar-outline" size={20} color={isActive ? THEME.gold : THEME.textSecondary} />
-                                    <Text style={[st.modalOptionText, isActive && st.modalOptionTextActive]}>{formatDate(d)}</Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </ScrollView>
-                    <TouchableOpacity style={st.modalCancel} onPress={() => setDatePickerVisible(false)}><Text style={st.modalCancelText}>Cancel</Text></TouchableOpacity>
-                </View></View>
+            {Platform.OS === 'android' && datePickerVisible && (
+                <DateTimePicker
+                    value={preferredDate || minDeliveryDate}
+                    mode="date"
+                    display="calendar"
+                    minimumDate={minDeliveryDate}
+                    maximumDate={maxDeliveryDate}
+                    onChange={onAndroidDeliveryDateChange}
+                />
+            )}
+
+            <Modal visible={Platform.OS === 'ios' && datePickerVisible} transparent animationType="fade">
+                <View style={st.modalOverlay}>
+                    <View style={[st.modalContent, st.datePickerModal]}>
+                        <Text style={st.modalTitle}>Preferred Delivery Date</Text>
+                        <DateTimePicker
+                            value={preferredDate || minDeliveryDate}
+                            mode="date"
+                            display="inline"
+                            themeVariant="dark"
+                            minimumDate={minDeliveryDate}
+                            maximumDate={maxDeliveryDate}
+                            onChange={onIOSDeliveryDateChange}
+                        />
+                        <TouchableOpacity style={st.modalCancel} onPress={() => setDatePickerVisible(false)}>
+                            <Text style={st.doneText}>Done</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal visible={Platform.OS === 'web' && datePickerVisible} transparent animationType="fade">
+                <View style={st.modalOverlay}>
+                    <View style={st.modalContent}>
+                        <Text style={st.modalTitle}>Preferred Delivery Date</Text>
+                        <ScrollView style={{ maxHeight: 360 }}>
+                            {webDateOptions.map((d) => {
+                                const isActive = preferredDate && preferredDate.toDateString() === d.toDateString();
+                                return (
+                                    <TouchableOpacity
+                                        key={d.toISOString()}
+                                        style={[st.modalOption, isActive && st.modalOptionActive]}
+                                        onPress={() => { setPreferredDate(d); setDatePickerVisible(false); }}
+                                    >
+                                        <MaterialCommunityIcons name="calendar-outline" size={20} color={isActive ? THEME.gold : THEME.textSecondary} />
+                                        <Text style={[st.modalOptionText, isActive && st.modalOptionTextActive]}>{formatDate(d)}</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                        <TouchableOpacity style={st.modalCancel} onPress={() => setDatePickerVisible(false)}>
+                            <Text style={st.modalCancelText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </Modal>
         </SafeAreaView>
     );
@@ -386,6 +453,8 @@ const st = StyleSheet.create({
     modalOptionText: { fontSize: 15, fontWeight: '500', color: THEME.textPrimary }, modalOptionTextActive: { color: THEME.gold, fontWeight: '700' },
     modalOptionSub: { fontSize: 12, color: THEME.textSecondary, marginTop: 2 },
     modalCancel: { paddingVertical: 12, marginTop: 4 }, modalCancelText: { fontSize: 15, fontWeight: '600', color: THEME.textSecondary, textAlign: 'center' },
+    datePickerModal: { maxWidth: 400, alignSelf: 'center' },
+    doneText: { fontSize: 16, fontWeight: '700', color: THEME.gold, textAlign: 'center' },
 });
 
 export default CartScreen;

@@ -6,8 +6,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import authService from '../api/authService';
 import { THEME } from '../theme';
+import { useAuth } from '../context/AuthContext';
 
 const ProfileScreen = ({ navigation }) => {
+    const { logout } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState('');
@@ -17,7 +19,7 @@ const ProfileScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const storedId = await AsyncStorage.getItem('userId');
-            if (!storedId) { Alert.alert('Error', 'User ID not found. Please log in again.'); navigation.replace('Login'); return; }
+            if (!storedId) { Alert.alert('Error', 'User ID not found. Please log in again.'); await logout(); return; }
             const storedRole = await AsyncStorage.getItem('userRole');
             setRole(storedRole || '');
             const response = await authService.getUserById(storedId);
@@ -29,7 +31,7 @@ const ProfileScreen = ({ navigation }) => {
             console.error('Error fetching profile:', error);
             Alert.alert('Error', 'Could not load profile data.');
         } finally { setLoading(false); }
-    }, [navigation]);
+    }, [logout]);
 
     useFocusEffect(useCallback(() => { fetchUserProfile(); }, [fetchUserProfile]));
 
@@ -40,10 +42,7 @@ const ProfileScreen = ({ navigation }) => {
                 text: 'Sign out',
                 onPress: async () => {
                     try {
-                        await AsyncStorage.removeItem('userToken');
-                        await AsyncStorage.removeItem('userRole');
-                        await AsyncStorage.removeItem('userId');
-                        navigation.replace('Login');
+                        await logout();
                     } catch (error) { console.error('Error logging out:', error); }
                 },
             },
@@ -66,7 +65,10 @@ const ProfileScreen = ({ navigation }) => {
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={THEME.bg} />
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <TouchableOpacity
+                    onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home'))}
+                    style={styles.backButton}
+                >
                     <MaterialCommunityIcons name="arrow-left" size={24} color={THEME.textPrimary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Profile</Text>

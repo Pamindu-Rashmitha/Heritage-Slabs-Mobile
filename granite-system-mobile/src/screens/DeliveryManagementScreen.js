@@ -12,6 +12,17 @@ import { THEME } from '../theme';
 const STATUS_FLOW = ['Scheduled', 'In Transit', 'Completed'];
 const getStatusColor = (s) => { if(s==='Scheduled') return {text:THEME.gold,bg:THEME.goldLight}; if(s==='In Transit') return {text:THEME.warning,bg:THEME.warningBg}; if(s==='Completed') return {text:THEME.success,bg:THEME.successBg}; return {text:THEME.textSecondary,bg:'rgba(255,255,255,0.06)'}; };
 
+/** Format order preferred delivery date for API / input (YYYY-MM-DD, local calendar day). */
+const preferredDeliveryDateToYMD = (order) => {
+    if (!order?.preferredDeliveryDate) return '';
+    const d = new Date(order.preferredDeliveryDate);
+    if (Number.isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+};
+
 const DeliveryRow = ({ item, onUpdateStatus, onDelete }) => {
     const sc = getStatusColor(item.status);
     return (
@@ -82,14 +93,16 @@ const DeliveryManagementScreen = ({ navigation }) => {
                 <Text style={s.label}>Vehicle</Text>
                 <TouchableOpacity style={s.input} onPress={()=>setVehiclePickerVisible(true)}><Text style={{color:selectedVehicleId?THEME.textPrimary:THEME.textMuted,fontSize:15}}>{getVehicleLabel()}</Text></TouchableOpacity>
                 <Text style={s.label}>Driver Name</Text><TextInput style={s.input} placeholder="Enter driver name" placeholderTextColor={THEME.textMuted} value={driverName} onChangeText={setDriverName}/>
-                <Text style={s.label}>Expected Date (YYYY-MM-DD)</Text><TextInput style={s.input} placeholder="e.g. 2026-04-10" placeholderTextColor={THEME.textMuted} value={expectedDate} onChangeText={setExpectedDate}/>
+                <Text style={s.label}>Expected delivery (YYYY-MM-DD)</Text>
+                <Text style={s.fieldHint}>Prefilled from the order's preferred date when you pick an order; you can edit it.</Text>
+                <TextInput style={s.input} placeholder="e.g. 2026-04-10" placeholderTextColor={THEME.textMuted} value={expectedDate} onChangeText={setExpectedDate}/>
                 <TouchableOpacity style={[s.submitBtn,formLoading&&{opacity:0.6}]} onPress={handleSubmit} disabled={formLoading}>{formLoading?<ActivityIndicator color="#fff"/>:<Text style={s.submitBtnText}>Schedule Delivery</Text>}</TouchableOpacity>
                 <TouchableOpacity style={s.modalCancel} onPress={()=>setFormModalVisible(false)}><Text style={s.modalCancelText}>Cancel</Text></TouchableOpacity>
                 </ScrollView></View></View></Modal>
 
             <Modal visible={orderPickerVisible} transparent animationType="fade"><View style={s.modalOverlay}><View style={[s.modalContent,{width:'90%',maxHeight:'60%'}]}>
                 <Text style={s.modalTitle}>Select Order</Text>
-                <FlatList data={orders.filter(o => o.status !== 'Shipped' && o.status !== 'Delivered')} keyExtractor={i=>i._id} renderItem={({item})=>{const sc=getStatusColor(item.status);return(<TouchableOpacity style={[s.modalOption,selectedOrderId===item._id&&s.modalOptionActive]} onPress={()=>{setSelectedOrderId(item._id);setOrderPickerVisible(false);}}><Text style={[s.modalOptionText,selectedOrderId===item._id&&s.modalOptionTextActive]}>{item.user?.name||'Unknown'} - LKR {item.totalPrice}</Text><View style={{flexDirection:'row',alignItems:'center',gap:6,marginTop:4,justifyContent:'center'}}><View style={[s.badge,{backgroundColor:sc.bg}]}><Text style={[s.badgeText,{color:sc.text}]}>{item.status}</Text></View></View></TouchableOpacity>);}} ListEmptyComponent={<Text style={{textAlign:'center',color:THEME.textSecondary,padding:20}}>No assignable orders available</Text>}/>
+                <FlatList data={orders.filter(o => o.status !== 'Shipped' && o.status !== 'Delivered')} keyExtractor={i=>i._id} renderItem={({item})=>{const sc=getStatusColor(item.status);return(<TouchableOpacity style={[s.modalOption,selectedOrderId===item._id&&s.modalOptionActive]} onPress={()=>{setSelectedOrderId(item._id);setExpectedDate(preferredDeliveryDateToYMD(item));setOrderPickerVisible(false);}}><Text style={[s.modalOptionText,selectedOrderId===item._id&&s.modalOptionTextActive]}>{item.user?.name||'Unknown'} - LKR {item.totalPrice}</Text><View style={{flexDirection:'row',alignItems:'center',gap:6,marginTop:4,justifyContent:'center'}}><View style={[s.badge,{backgroundColor:sc.bg}]}><Text style={[s.badgeText,{color:sc.text}]}>{item.status}</Text></View></View></TouchableOpacity>);}} ListEmptyComponent={<Text style={{textAlign:'center',color:THEME.textSecondary,padding:20}}>No assignable orders available</Text>}/>
                 <TouchableOpacity style={s.modalCancel} onPress={()=>setOrderPickerVisible(false)}><Text style={s.modalCancelText}>Cancel</Text></TouchableOpacity>
             </View></View></Modal>
 
@@ -124,6 +137,7 @@ const s = StyleSheet.create({
     modalOptionText:{fontSize:15,fontWeight:'500',color:THEME.textPrimary,textAlign:'center'},modalOptionTextActive:{color:THEME.gold,fontWeight:'700'},
     modalCancel:{paddingVertical:12,marginTop:4},modalCancelText:{fontSize:15,fontWeight:'600',color:THEME.textSecondary,textAlign:'center'},
     label:{fontSize:13,fontWeight:'600',color:THEME.textPrimary,marginBottom:6,marginTop:12},
+    fieldHint:{fontSize:12,color:THEME.textMuted,marginBottom:8,lineHeight:16},
     input:{backgroundColor:THEME.bgInput,padding:14,borderRadius:12,borderWidth:1,borderColor:THEME.border,fontSize:15,justifyContent:'center',color:THEME.textPrimary},
     submitBtn:{backgroundColor:THEME.gold,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.gold,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
 });

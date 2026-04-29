@@ -8,6 +8,10 @@ import vehicleService from '../api/vehicleService';
 import { THEME } from '../theme';
 
 const STATUS_OPTIONS = ['Available','On Route','Maintenance'];
+/** 2 or 3 letters, hyphen, 4 digits (e.g. AB-1234, ABC-5678) */
+const LICENSE_PLATE_REGEX = /^[A-Za-z]{2,3}-\d{4}$/;
+const MAX_CAPACITY_KG = 3500;
+const normalizeLicensePlate = (s) => s.trim().toUpperCase();
 const getStatusColor = (s) => { if(s==='Available') return {text:THEME.success,bg:THEME.successBg}; if(s==='On Route') return {text:THEME.warning,bg:THEME.warningBg}; if(s==='Maintenance') return {text:THEME.danger,bg:THEME.dangerBg}; return {text:THEME.textSecondary,bg:'rgba(255,255,255,0.06)'}; };
 
 const VehicleRow = ({ item, onEdit, onDelete }) => {
@@ -34,8 +38,25 @@ const VehicleManagementScreen = ({ navigation }) => {
     const fetchVehicles = async (isRefresh=false) => { if(isRefresh) setRefreshing(true); else setLoading(true); try { const res = await vehicleService.getAll(); setVehicles(res.data.vehicles??res.data??[]); } catch(e){ Alert.alert('Fetch Error','Could not load vehicles.'); } finally { setLoading(false); setRefreshing(false); } };
     const openAdd = () => { setEditing(null); setLicensePlate(''); setVehicleType(''); setCapacity(''); setStatus('Available'); setFormVisible(true); };
     const openEdit = (item) => { setEditing(item); setLicensePlate(item.licensePlate); setVehicleType(item.vehicleType); setCapacity(String(item.maxWeightCapacity)); setStatus(item.status); setFormVisible(true); };
-    const validateForm = () => { if(!licensePlate.trim()){Alert.alert('Validation Error','License plate is required.');return false;} if(licensePlate.trim().length<2){Alert.alert('Validation Error','License plate must be at least 2 characters.');return false;} if(!vehicleType.trim()){Alert.alert('Validation Error','Vehicle type is required.');return false;} if(vehicleType.trim().length<2){Alert.alert('Validation Error','Vehicle type must be at least 2 characters.');return false;} if(!capacity.trim()){Alert.alert('Validation Error','Max weight capacity is required.');return false;} const cap = parseFloat(capacity); if(isNaN(cap)||cap<=0){Alert.alert('Validation Error','Capacity must be a valid positive number.');return false;} return true; };
-    const handleSubmit = async () => { if(!validateForm()) return; setFormLoading(true); try { const body = { licensePlate:licensePlate.trim(), vehicleType:vehicleType.trim(), maxWeightCapacity:parseFloat(capacity), status }; if(editing) { await vehicleService.update(editing._id,body); Alert.alert('Success','Vehicle updated successfully.'); } else { await vehicleService.create(body); Alert.alert('Success','Vehicle added successfully.'); } setFormVisible(false); fetchVehicles(); } catch(e){ Alert.alert('Error',e.response?.data?.message||e.response?.data?.errors?.[0]?.msg||'Could not save vehicle.'); } finally { setFormLoading(false); } };
+    const validateForm = () => {
+        const plateRaw = licensePlate.trim();
+        if (!plateRaw) { Alert.alert('Validation Error', 'License plate is required.'); return false; }
+        if (!LICENSE_PLATE_REGEX.test(plateRaw)) {
+            Alert.alert('Validation Error', 'License plate must be 2 or 3 letters, a hyphen (-), then 4 digits (e.g. AB-1234 or ABC-5678).');
+            return false;
+        }
+        const plateNorm = normalizeLicensePlate(plateRaw);
+        const duplicate = vehicles.some((v) => normalizeLicensePlate(v.licensePlate ?? '') === plateNorm && (!editing || v._id !== editing._id));
+        if (duplicate) { Alert.alert('Validation Error', 'A vehicle with this license plate already exists.'); return false; }
+        if (!vehicleType.trim()) { Alert.alert('Validation Error', 'Vehicle type is required.'); return false; }
+        if (vehicleType.trim().length < 2) { Alert.alert('Validation Error', 'Vehicle type must be at least 2 characters.'); return false; }
+        if (!capacity.trim()) { Alert.alert('Validation Error', 'Max weight capacity is required.'); return false; }
+        const cap = parseFloat(capacity);
+        if (isNaN(cap) || cap <= 0) { Alert.alert('Validation Error', 'Capacity must be a positive number.'); return false; }
+        if (cap > MAX_CAPACITY_KG) { Alert.alert('Validation Error', `Capacity cannot exceed ${MAX_CAPACITY_KG} kg.`); return false; }
+        return true;
+    };
+    const handleSubmit = async () => { if(!validateForm()) return; setFormLoading(true); try { const body = { licensePlate:normalizeLicensePlate(licensePlate), vehicleType:vehicleType.trim(), maxWeightCapacity:parseFloat(capacity), status }; if(editing) { await vehicleService.update(editing._id,body); Alert.alert('Success','Vehicle updated successfully.'); } else { await vehicleService.create(body); Alert.alert('Success','Vehicle added successfully.'); } setFormVisible(false); fetchVehicles(); } catch(e){ Alert.alert('Error',e.response?.data?.message||e.response?.data?.errors?.[0]?.msg||'Could not save vehicle.'); } finally { setFormLoading(false); } };
     const handleDelete = (item) => { Alert.alert('Delete Vehicle',`Delete "${item.licensePlate}"?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:async()=>{ try { await vehicleService.delete(item._id); setVehicles(p=>p.filter(v=>v._id!==item._id)); } catch(e){ Alert.alert('Delete Failed','Could not delete vehicle.'); } }}]); };
 
     return (
@@ -52,9 +73,9 @@ const VehicleManagementScreen = ({ navigation }) => {
 
             <Modal visible={formVisible} transparent animationType="slide"><View style={st.modalOverlay}><View style={[st.modalContent,{width:'90%'}]}>
                 <Text style={st.modalTitle}>{editing?'Edit Vehicle':'Add Vehicle'}</Text><ScrollView>
-                <Text style={st.label}>License Plate</Text><TextInput style={st.input} placeholder="e.g. AB-1234" placeholderTextColor={THEME.textMuted} value={licensePlate} onChangeText={setLicensePlate}/>
+                <Text style={st.label}>License Plate</Text><TextInput style={st.input} placeholder="e.g. AB-1234 or ABC-5678" placeholderTextColor={THEME.textMuted} value={licensePlate} onChangeText={setLicensePlate} autoCapitalize="characters"/>
                 <Text style={st.label}>Vehicle Type / Model</Text><TextInput style={st.input} placeholder="e.g. Lorry, Truck" placeholderTextColor={THEME.textMuted} value={vehicleType} onChangeText={setVehicleType}/>
-                <Text style={st.label}>Max Weight Capacity (kg)</Text><TextInput style={st.input} placeholder="e.g. 5000" placeholderTextColor={THEME.textMuted} value={capacity} onChangeText={setCapacity} keyboardType="numeric"/>
+                <Text style={st.label}>Max Weight Capacity (kg)</Text><TextInput style={st.input} placeholder={`e.g. 1500 (max ${MAX_CAPACITY_KG} kg)`} placeholderTextColor={THEME.textMuted} value={capacity} onChangeText={setCapacity} keyboardType="numeric"/>
                 <Text style={st.label}>Status</Text>
                 <TouchableOpacity style={st.input} onPress={()=>setStatusPickerVisible(true)}><Text style={{fontSize:15,color:THEME.textPrimary}}>{status}</Text></TouchableOpacity>
                 <TouchableOpacity style={[st.submitBtn,formLoading&&{opacity:0.6}]} onPress={handleSubmit} disabled={formLoading}>{formLoading?<ActivityIndicator color="#fff"/>:<Text style={st.submitBtnText}>{editing?'Update Vehicle':'Add Vehicle'}</Text>}</TouchableOpacity>

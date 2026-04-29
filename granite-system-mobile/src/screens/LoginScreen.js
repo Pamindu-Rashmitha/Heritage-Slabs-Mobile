@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { Alert, Dimensions, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import authService from '../api/authService';
 import {
     View,
     Text,
@@ -9,14 +6,20 @@ import {
     TouchableOpacity,
     StyleSheet,
     StatusBar,
+    Alert,
+    Dimensions,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../theme';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -34,24 +37,7 @@ const LoginScreen = ({ navigation }) => {
         }
 
         try {
-            const response = await authService.login(email, password);
-
-            const token = response.data.token;
-            const role = response.data.role;
-            const userId = response.data._id;
-
-            await AsyncStorage.setItem('userToken', token);
-            await AsyncStorage.setItem('userRole', role);
-            if (userId) {
-                await AsyncStorage.setItem('userId', userId);
-            }
-
-            if (role === 'Admin') {
-                navigation.replace('AdminDashboard');
-            } else {
-                navigation.replace('CustomerCatalog');
-            }
-
+            await login(email.trim(), password);
         } catch (error) {
             console.error(error);
             const msg = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || 'Something went wrong';

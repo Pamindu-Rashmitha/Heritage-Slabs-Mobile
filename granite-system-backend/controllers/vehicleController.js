@@ -1,6 +1,20 @@
 const Vehicle = require('../models/Vehicle');
 
 const isOnlyNumbers = (str) => /^\d+$/.test(str.trim());
+const LICENSE_PLATE_REGEX = /^[A-Za-z]{2,3}-\d{4}$/;
+const MAX_CAPACITY_KG = 3500;
+
+const normalizeLicensePlate = (s) => String(s).trim().toUpperCase();
+
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Case-insensitive match for duplicate checks (stored plates may vary in casing). */
+const findOneByPlateInsensitive = (plate) => {
+    const norm = normalizeLicensePlate(plate);
+    return Vehicle.findOne({
+        licensePlate: new RegExp(`^${escapeRegex(norm)}$`, 'i'),
+    });
+};
 
 const createVehicle = async (req, res) => {
     try {
@@ -18,18 +32,26 @@ const createVehicle = async (req, res) => {
             return res.status(400).json({ message: 'Vehicle type must be at least 2 characters' });
         }
 
-        if (maxWeightCapacity <= 0) {
-            return res.status(400).json({ message: 'Max weight capacity must be greater than 0' });
+        if (maxWeightCapacity <= 0 || maxWeightCapacity > MAX_CAPACITY_KG) {
+            return res.status(400).json({
+                message: `Max weight capacity must be greater than 0 and at most ${MAX_CAPACITY_KG} kg`,
+            });
         }
 
-        // Check for duplicate license plate
-        const existingVehicle = await Vehicle.findOne({ licensePlate });
+        const plateNormalized = normalizeLicensePlate(licensePlate);
+        if (!LICENSE_PLATE_REGEX.test(plateNormalized)) {
+            return res.status(400).json({
+                message: 'License plate must be 2 or 3 letters, a hyphen (-), then 4 digits',
+            });
+        }
+
+        const existingVehicle = await findOneByPlateInsensitive(licensePlate);
         if (existingVehicle) {
             return res.status(400).json({ message: 'A vehicle with this license plate already exists' });
         }
 
         const vehicle = await Vehicle.create({
-            licensePlate,
+            licensePlate: plateNormalized,
             vehicleType,
             maxWeightCapacity,
         });
@@ -89,21 +111,35 @@ const updateVehicle = async (req, res) => {
             return res.status(400).json({ message: 'Vehicle type must be at least 2 characters' });
         }
 
-        if (maxWeightCapacity !== undefined && maxWeightCapacity <= 0) {
-            return res.status(400).json({ message: 'Max weight capacity must be greater than 0' });
+        if (maxWeightCapacity !== undefined && (maxWeightCapacity <= 0 || maxWeightCapacity > MAX_CAPACITY_KG)) {
+            return res.status(400).json({
+                message: `Max weight capacity must be greater than 0 and at most ${MAX_CAPACITY_KG} kg`,
+            });
         }
 
-        // Check duplicate license plate on update 
-        if (licensePlate && licensePlate !== vehicle.licensePlate) {
-            const existing = await Vehicle.findOne({ licensePlate });
-            if (existing) {
-                return res.status(400).json({ message: 'A vehicle with this license plate already exists' });
+        let body = { ...req.body };
+        if (licensePlate !== undefined) {
+            const plateNormalized = normalizeLicensePlate(licensePlate);
+            if (!LICENSE_PLATE_REGEX.test(plateNormalized)) {
+                return res.status(400).json({
+                    message: 'License plate must be 2 or 3 letters, a hyphen (-), then 4 digits',
+                });
             }
+            if (normalizeLicensePlate(vehicle.licensePlate) !== plateNormalized) {
+                const existing = await Vehicle.findOne({
+                    licensePlate: new RegExp(`^${escapeRegex(plateNormalized)}$`, 'i'),
+                    _id: { $ne: vehicle._id },
+                });
+                if (existing) {
+                    return res.status(400).json({ message: 'A vehicle with this license plate already exists' });
+                }
+            }
+            body.licensePlate = plateNormalized;
         }
 
         const updatedVehicle = await Vehicle.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            body,
             { new: true }
         );
 

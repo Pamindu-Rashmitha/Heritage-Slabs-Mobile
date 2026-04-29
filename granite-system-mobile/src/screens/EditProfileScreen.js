@@ -5,8 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import authService from '../api/authService';
 import { THEME } from '../theme';
+import { useAuth } from '../context/AuthContext';
 
 const EditProfileScreen = ({ navigation }) => {
+    const { logout } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -19,7 +21,7 @@ const EditProfileScreen = ({ navigation }) => {
     const fetchUserProfile = async () => {
         try {
             const storedId = await AsyncStorage.getItem('userId');
-            if (!storedId) { Alert.alert('Error', 'User ID not found. Please log in again.'); navigation.replace('Login'); return; }
+            if (!storedId) { Alert.alert('Error', 'User ID not found. Please log in again.'); await logout(); return; }
             setUserId(storedId);
             const response = await authService.getUserById(storedId);
             if (response.data) { setName(response.data.name || ''); setEmail(response.data.email || ''); }
@@ -46,11 +48,9 @@ const EditProfileScreen = ({ navigation }) => {
                 try {
                     setSaving(true);
                     await authService.deleteUser(userId);
-                    await AsyncStorage.removeItem('userToken');
-                    await AsyncStorage.removeItem('userRole');
-                    await AsyncStorage.removeItem('userId');
-                    Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
-                    navigation.replace('Login');
+                    Alert.alert('Account Deleted', 'Your account has been deleted successfully.', [
+                        { text: 'OK', onPress: () => logout() },
+                    ]);
                 } catch (error) { console.error('Delete error:', error); Alert.alert('Error', error.response?.data?.message || 'Failed to delete account.'); setSaving(false); }
             }},
         ]);

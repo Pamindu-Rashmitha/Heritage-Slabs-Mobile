@@ -11,8 +11,8 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 import dashboardService from '../api/dashboardService';
 import { THEME, glassCard } from '../theme';
 
@@ -87,6 +87,7 @@ const FinanceSection = ({ finance }) => {
 };
 
 const AdminDashboardScreen = ({ navigation }) => {
+    const { logout } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -110,9 +111,7 @@ const AdminDashboardScreen = ({ navigation }) => {
 
     const handleLogout = async () => {
         try {
-            await AsyncStorage.removeItem('userToken');
-            await AsyncStorage.removeItem('userRole');
-            navigation.replace('Login');
+            await logout();
         } catch (error) {
             console.error('Logout error:', error);
         }

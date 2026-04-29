@@ -12,15 +12,14 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import authService from '../api/authService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { THEME } from '../theme';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 const RegisterScreen = ({ navigation }) => {
+    const { register } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -70,27 +69,15 @@ const RegisterScreen = ({ navigation }) => {
         }
 
         try {
-            const response = await authService.register({ name, email, password });
+            const response = await register({ name, email, password });
 
-            const token = response.data.token;
-            const role = response.data.role || 'customer';
-            const userId = response.data._id;
-
-            if (!token) {
+            if (!response.token) {
                 Alert.alert('Account Created!', 'Please log in with your new credentials.');
-                navigation.replace('Login');
+                navigation.navigate('Login');
                 return;
             }
 
-            await AsyncStorage.setItem('userToken', token);
-            await AsyncStorage.setItem('userRole', role);
-            if (userId) {
-                await AsyncStorage.setItem('userId', userId);
-            }
-
-            Alert.alert('Success!', `Welcome to the Granite Catalog, ${response.data.name}!`);
-            navigation.replace('CustomerCatalog');
-
+            Alert.alert('Success!', `Welcome to the Granite Catalog, ${response.name}!`);
         } catch (error) {
             console.error(error);
             const msg = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || 'Something went wrong';
