@@ -3,9 +3,6 @@ import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 
-/**
- * Avoids extra bottom inset when a tab bar already handles safe area.
- */
 export default function ScreenContainer({ children, style }) {
     const insets = useSafeAreaInsets();
     const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 0;

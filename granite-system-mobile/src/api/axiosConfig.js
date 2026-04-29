@@ -22,8 +22,7 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// ── Response Interceptor ────────────────────────────────────────────────────
-// Handles 401 Unauthorized globally — clears session; AuthContext returns to login.
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
