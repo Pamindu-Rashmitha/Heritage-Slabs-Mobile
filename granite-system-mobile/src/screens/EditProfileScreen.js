@@ -15,6 +15,7 @@ const EditProfileScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => { fetchUserProfile(); }, []);
 
@@ -29,8 +30,20 @@ const EditProfileScreen = ({ navigation }) => {
         finally { setLoading(false); }
     };
 
+    const validate = () => {
+        let newErrors = {};
+        if (!name) newErrors.name = 'Full Name is required';
+        if (!email) newErrors.email = 'Email Address is required';
+        else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) newErrors.email = 'Please enter a valid email address';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleUpdateProfile = async () => {
-        if (!name || !email) { Alert.alert('Validation Error', 'Name and email cannot be empty'); return; }
+        if (!validate()) return;
         setSaving(true);
         try {
             const payload = { name, email };
@@ -85,9 +98,11 @@ const EditProfileScreen = ({ navigation }) => {
                             </View>
                         </View>
                         <Text style={styles.label}>Full Name</Text>
-                        <TextInput style={styles.input} placeholder="Your Name" placeholderTextColor={THEME.textMuted} value={name} onChangeText={setName} />
+                        <TextInput style={[styles.input, errors.name && styles.inputError]} placeholder="Your Name" placeholderTextColor={THEME.textMuted} value={name} onChangeText={(text) => { setName(text); if (errors.name) setErrors({...errors, name: null}); }} />
+                        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
                         <Text style={styles.label}>Email Address</Text>
-                        <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor={THEME.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                        <TextInput style={[styles.input, errors.email && styles.inputError]} placeholder="Email Address" placeholderTextColor={THEME.textMuted} value={email} onChangeText={(text) => { setEmail(text); if (errors.email) setErrors({...errors, email: null}); }} keyboardType="email-address" autoCapitalize="none" />
+                        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
                         <Text style={styles.label}>New Password (Optional)</Text>
                         <TextInput style={styles.input} placeholder="Leave blank to keep current password" placeholderTextColor={THEME.textMuted} value={password} onChangeText={setPassword} secureTextEntry />
                         <TouchableOpacity style={styles.updateButton} onPress={handleUpdateProfile} disabled={saving}>
@@ -128,6 +143,8 @@ const styles = StyleSheet.create({
     avatarText: { fontSize: 40, fontWeight: '800', color: '#fff' },
     label: { fontSize: 14, fontWeight: '600', color: THEME.textSecondary, marginBottom: 5, marginLeft: 5 },
     input: { backgroundColor: THEME.bgInput, paddingVertical: 15, paddingHorizontal: 20, borderRadius: 12, marginBottom: 20, fontSize: 16, borderWidth: 1, borderColor: THEME.border, color: THEME.textPrimary },
+    inputError: { borderColor: '#FF4C4C', backgroundColor: 'rgba(255,76,76,0.05)', marginBottom: 8 },
+    errorText: { color: '#FF4C4C', fontSize: 12, marginBottom: 12, marginLeft: 5 },
     updateButton: { backgroundColor: THEME.gold, paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 10, shadowColor: THEME.gold, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
     updateButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
     deleteButton: { backgroundColor: 'transparent', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 20, borderWidth: 1.5, borderColor: THEME.danger },

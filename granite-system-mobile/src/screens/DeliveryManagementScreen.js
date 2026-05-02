@@ -48,6 +48,7 @@ const DeliveryManagementScreen = ({ navigation }) => {
     const [driverName, setDriverName] = useState(''); const [expectedDate, setExpectedDate] = useState('');
     const [formLoading, setFormLoading] = useState(false);
     const [orderPickerVisible, setOrderPickerVisible] = useState(false); const [vehiclePickerVisible, setVehiclePickerVisible] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useFocusEffect(useCallback(() => { fetchAllData(); }, []));
 
@@ -58,7 +59,17 @@ const DeliveryManagementScreen = ({ navigation }) => {
     };
 
     const openAddForm = () => { setSelectedOrderId(''); setSelectedVehicleId(''); setDriverName(''); setExpectedDate(''); setFormModalVisible(true); };
-    const validateForm = () => { if(!selectedOrderId){Alert.alert('Validation Error','Please select an order.');return false;} if(!selectedVehicleId){Alert.alert('Validation Error','Please select a vehicle.');return false;} if(!driverName.trim()){Alert.alert('Validation Error','Driver name is required.');return false;} if(driverName.trim().length<2){Alert.alert('Validation Error','Driver name must be at least 2 characters.');return false;} if(!expectedDate.trim()){Alert.alert('Validation Error','Expected delivery date is required.');return false;} if(!/^\d{4}-\d{2}-\d{2}$/.test(expectedDate.trim())){Alert.alert('Validation Error','Date must be in YYYY-MM-DD format.');return false;} return true; };
+    const validateForm = () => {
+        let newErrors = {};
+        if (!selectedOrderId) newErrors.order = 'Please select an order.';
+        if (!selectedVehicleId) newErrors.vehicle = 'Please select a vehicle.';
+        if (!driverName.trim()) newErrors.driverName = 'Driver name is required.';
+        else if (driverName.trim().length < 2) newErrors.driverName = 'Must be at least 2 characters.';
+        if (!expectedDate.trim()) newErrors.expectedDate = 'Expected delivery date is required.';
+        else if (!/^\d{4}-\d{2}-\d{2}$/.test(expectedDate.trim())) newErrors.expectedDate = 'Date must be in YYYY-MM-DD format.';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = async () => { if(!validateForm()) return; setFormLoading(true); try { await deliveryService.create({order:selectedOrderId,vehicle:selectedVehicleId,driverName:driverName.trim(),expectedDeliveryDate:expectedDate.trim()}); Alert.alert('Success','Delivery scheduled successfully.'); setFormModalVisible(false); fetchAllData(); } catch(e){ Alert.alert('Error',e.response?.data?.message||'Could not create delivery.'); } finally { setFormLoading(false); } };
     const confirmStatusUpdate = async (newStatus) => { setStatusModalVisible(false); try { await deliveryService.updateStatus(selectedDelivery._id, newStatus); setDeliveries(p=>p.map(d=>d._id===selectedDelivery._id?{...d,status:newStatus}:d)); } catch(e){ Alert.alert('Update Failed','Could not update delivery status.'); } };
@@ -87,15 +98,19 @@ const DeliveryManagementScreen = ({ navigation }) => {
             </View></View></Modal>
 
             <Modal visible={formModalVisible} transparent animationType="slide"><View style={s.modalOverlay}><View style={[s.modalContent,{width:'90%'}]}>
-                <Text style={s.modalTitle}>Schedule Delivery</Text><ScrollView>
+                <Text style={s.modalTitle}>Schedule Delivery</Text><ScrollView showsVerticalScrollIndicator={false}>
                 <Text style={s.label}>Order</Text>
-                <TouchableOpacity style={s.input} onPress={()=>setOrderPickerVisible(true)}><Text style={{color:selectedOrderId?THEME.textPrimary:THEME.textMuted,fontSize:15}}>{getOrderLabel()}</Text></TouchableOpacity>
+                <TouchableOpacity style={[s.input, errors.order && s.inputError]} onPress={()=>{setOrderPickerVisible(true); if(errors.order) setErrors({...errors, order: null});}}><Text style={{color:selectedOrderId?THEME.textPrimary:THEME.textMuted,fontSize:15}}>{getOrderLabel()}</Text></TouchableOpacity>
+                {errors.order && <Text style={s.errorText}>{errors.order}</Text>}
                 <Text style={s.label}>Vehicle</Text>
-                <TouchableOpacity style={s.input} onPress={()=>setVehiclePickerVisible(true)}><Text style={{color:selectedVehicleId?THEME.textPrimary:THEME.textMuted,fontSize:15}}>{getVehicleLabel()}</Text></TouchableOpacity>
-                <Text style={s.label}>Driver Name</Text><TextInput style={s.input} placeholder="Enter driver name" placeholderTextColor={THEME.textMuted} value={driverName} onChangeText={setDriverName}/>
+                <TouchableOpacity style={[s.input, errors.vehicle && s.inputError]} onPress={()=>{setVehiclePickerVisible(true); if(errors.vehicle) setErrors({...errors, vehicle: null});}}><Text style={{color:selectedVehicleId?THEME.textPrimary:THEME.textMuted,fontSize:15}}>{getVehicleLabel()}</Text></TouchableOpacity>
+                {errors.vehicle && <Text style={s.errorText}>{errors.vehicle}</Text>}
+                <Text style={s.label}>Driver Name</Text><TextInput style={[s.input, errors.driverName && s.inputError]} placeholder="Enter driver name" placeholderTextColor={THEME.textMuted} value={driverName} onChangeText={(t)=>{setDriverName(t); if(errors.driverName) setErrors({...errors, driverName: null});}}/>
+                {errors.driverName && <Text style={s.errorText}>{errors.driverName}</Text>}
                 <Text style={s.label}>Expected delivery (YYYY-MM-DD)</Text>
                 <Text style={s.fieldHint}>Prefilled from the order's preferred date when you pick an order; you can edit it.</Text>
-                <TextInput style={s.input} placeholder="e.g. 2026-04-10" placeholderTextColor={THEME.textMuted} value={expectedDate} onChangeText={setExpectedDate}/>
+                <TextInput style={[s.input, errors.expectedDate && s.inputError]} placeholder="e.g. 2026-04-10" placeholderTextColor={THEME.textMuted} value={expectedDate} onChangeText={(t)=>{setExpectedDate(t); if(errors.expectedDate) setErrors({...errors, expectedDate: null});}}/>
+                {errors.expectedDate && <Text style={s.errorText}>{errors.expectedDate}</Text>}
                 <TouchableOpacity style={[s.submitBtn,formLoading&&{opacity:0.6}]} onPress={handleSubmit} disabled={formLoading}>{formLoading?<ActivityIndicator color="#fff"/>:<Text style={s.submitBtnText}>Schedule Delivery</Text>}</TouchableOpacity>
                 <TouchableOpacity style={s.modalCancel} onPress={()=>setFormModalVisible(false)}><Text style={s.modalCancelText}>Cancel</Text></TouchableOpacity>
                 </ScrollView></View></View></Modal>
@@ -139,6 +154,8 @@ const s = StyleSheet.create({
     label:{fontSize:13,fontWeight:'600',color:THEME.textPrimary,marginBottom:6,marginTop:12},
     fieldHint:{fontSize:12,color:THEME.textMuted,marginBottom:8,lineHeight:16},
     input:{backgroundColor:THEME.bgInput,padding:14,borderRadius:12,borderWidth:1,borderColor:THEME.border,fontSize:15,justifyContent:'center',color:THEME.textPrimary},
+    inputError: { borderColor: THEME.danger, backgroundColor: 'rgba(255,76,76,0.05)' },
+    errorText: { color: THEME.danger, fontSize: 12, marginTop: 4, marginLeft: 4 },
     submitBtn:{backgroundColor:THEME.gold,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.gold,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
 });
 

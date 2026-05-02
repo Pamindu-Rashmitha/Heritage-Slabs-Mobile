@@ -26,47 +26,42 @@ const RegisterScreen = ({ navigation }) => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+        let newErrors = {};
+
+        if (!name) newErrors.name = 'Full Name is required';
+        else if (name.trim().length < 2) newErrors.name = 'Name must be at least 2 characters';
+        else if (/^\d+$/.test(name.trim())) newErrors.name = 'Name cannot contain only numbers';
+
+        if (!email) newErrors.email = 'Email Address is required';
+        else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) newErrors.email = 'Please enter a valid email address';
+        }
+
+        if (!password) newErrors.password = 'Password is required';
+        else if (password.length < 8) newErrors.password = 'Password must be at least 8 characters long';
+        else {
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            if (!hasUpper || !hasLower || !hasNumber || !hasSymbol) {
+                newErrors.password = 'Password must contain uppercase, lowercase, number, and special character';
+            }
+        }
+
+        if (!confirmPassword) newErrors.confirmPassword = 'Confirm Password is required';
+        else if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleRegister = async () => {
-        if (!name || !email || !password || !confirmPassword) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            Alert.alert('Validation Error', 'Passwords do not match');
-            return;
-        }
-
-        if (name.trim().length < 2) {
-            Alert.alert('Validation Error', 'Name must be at least 2 characters');
-            return;
-        }
-
-        if (/^\d+$/.test(name.trim())) {
-            Alert.alert('Validation Error', 'Name cannot contain only numbers');
-            return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.trim())) {
-            Alert.alert('Validation Error', 'Please enter a valid email address');
-            return;
-        }
-
-        if (password.length < 8) {
-            Alert.alert('Validation Error', 'Password must be at least 8 characters long');
-            return;
-        }
-
-        const hasUpper = /[A-Z]/.test(password);
-        const hasLower = /[a-z]/.test(password);
-        const hasNumber = /\d/.test(password);
-        const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-        if (!hasUpper || !hasLower || !hasNumber || !hasSymbol) {
-            Alert.alert('Validation Error', 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
-            return;
-        }
+        if (!validate()) return;
 
         try {
             const response = await register({ name, email, password });
@@ -121,46 +116,57 @@ const RegisterScreen = ({ navigation }) => {
                             <Text style={styles.welcomeSubtitle}>Join to view premium granite slabs</Text>
 
                             {/* Full Name input */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, errors.name && styles.inputError]}>
                                 <View style={styles.inputIconWrap}>
-                                    <MaterialCommunityIcons name="account-outline" size={20} color={THEME.textMuted} />
+                                    <MaterialCommunityIcons name="account-outline" size={20} color={errors.name ? '#FF4C4C' : THEME.textMuted} />
                                 </View>
                                 <TextInput
                                     style={styles.inputField}
                                     placeholder="Full Name"
                                     placeholderTextColor={THEME.textMuted}
                                     value={name}
-                                    onChangeText={setName}
+                                    onChangeText={(text) => {
+                                        setName(text);
+                                        if (errors.name) setErrors({...errors, name: null});
+                                    }}
                                 />
                             </View>
+                            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
 
                             {/* Email input */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, errors.email && styles.inputError]}>
                                 <View style={styles.inputIconWrap}>
-                                    <MaterialCommunityIcons name="email-outline" size={20} color={THEME.textMuted} />
+                                    <MaterialCommunityIcons name="email-outline" size={20} color={errors.email ? '#FF4C4C' : THEME.textMuted} />
                                 </View>
                                 <TextInput
                                     style={styles.inputField}
                                     placeholder="Email Address"
                                     placeholderTextColor={THEME.textMuted}
                                     value={email}
-                                    onChangeText={setEmail}
+                                    onChangeText={(text) => {
+                                        setEmail(text);
+                                        if (errors.email) setErrors({...errors, email: null});
+                                    }}
                                     keyboardType="email-address"
                                     autoCapitalize="none"
                                 />
                             </View>
+                            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
                             {/* Password input */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, errors.password && styles.inputError]}>
                                 <View style={styles.inputIconWrap}>
-                                    <MaterialCommunityIcons name="lock-outline" size={20} color={THEME.textMuted} />
+                                    <MaterialCommunityIcons name="lock-outline" size={20} color={errors.password ? '#FF4C4C' : THEME.textMuted} />
                                 </View>
                                 <TextInput
                                     style={styles.inputField}
                                     placeholder="Password"
                                     placeholderTextColor={THEME.textMuted}
                                     value={password}
-                                    onChangeText={setPassword}
+                                    onChangeText={(text) => {
+                                        setPassword(text);
+                                        if (errors.password) setErrors({...errors, password: null});
+                                    }}
                                     secureTextEntry={!showPassword}
                                 />
                                 <TouchableOpacity
@@ -174,18 +180,22 @@ const RegisterScreen = ({ navigation }) => {
                                     />
                                 </TouchableOpacity>
                             </View>
+                            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
                             {/* Confirm Password input */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, errors.confirmPassword && styles.inputError]}>
                                 <View style={styles.inputIconWrap}>
-                                    <MaterialCommunityIcons name="lock-check-outline" size={20} color={THEME.textMuted} />
+                                    <MaterialCommunityIcons name="lock-check-outline" size={20} color={errors.confirmPassword ? '#FF4C4C' : THEME.textMuted} />
                                 </View>
                                 <TextInput
                                     style={styles.inputField}
                                     placeholder="Confirm Password"
                                     placeholderTextColor={THEME.textMuted}
                                     value={confirmPassword}
-                                    onChangeText={setConfirmPassword}
+                                    onChangeText={(text) => {
+                                        setConfirmPassword(text);
+                                        if (errors.confirmPassword) setErrors({...errors, confirmPassword: null});
+                                    }}
                                     secureTextEntry={!showConfirmPassword}
                                 />
                                 <TouchableOpacity
@@ -199,6 +209,7 @@ const RegisterScreen = ({ navigation }) => {
                                     />
                                 </TouchableOpacity>
                             </View>
+                            {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
 
                             {/* Sign Up button */}
                             <TouchableOpacity style={styles.signUpButton} onPress={handleRegister} activeOpacity={0.85}>
@@ -358,6 +369,17 @@ const styles = StyleSheet.create({
         width: 44,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    inputError: {
+        borderColor: '#FF4C4C',
+        backgroundColor: 'rgba(255,76,76,0.05)',
+    },
+    errorText: {
+        color: '#FF4C4C',
+        fontSize: 12,
+        marginTop: -6,
+        marginBottom: 10,
+        marginLeft: 4,
     },
 
     /* ── Sign Up Button ── */

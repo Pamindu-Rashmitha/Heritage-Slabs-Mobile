@@ -23,18 +23,25 @@ const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+        let newErrors = {};
+
+        if (!email) newErrors.email = 'Email Address is required';
+        else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) newErrors.email = 'Please enter a valid email address';
+        }
+
+        if (!password) newErrors.password = 'Password is required';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.trim())) {
-            Alert.alert('Validation Error', 'Please enter a valid email address');
-            return;
-        }
+        if (!validate()) return;
 
         try {
             await login(email.trim(), password);
@@ -81,32 +88,39 @@ const LoginScreen = ({ navigation }) => {
                             <Text style={styles.welcomeSubtitle}>Sign in to continue</Text>
 
                             {/* Email input with icon */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, errors.email && styles.inputError]}>
                                 <View style={styles.inputIconWrap}>
-                                    <MaterialCommunityIcons name="email-outline" size={20} color={THEME.textMuted} />
+                                    <MaterialCommunityIcons name="email-outline" size={20} color={errors.email ? '#FF4C4C' : THEME.textMuted} />
                                 </View>
                                 <TextInput
                                     style={styles.inputField}
                                     placeholder="Email Address"
                                     placeholderTextColor={THEME.textMuted}
                                     value={email}
-                                    onChangeText={setEmail}
+                                    onChangeText={(text) => {
+                                        setEmail(text);
+                                        if (errors.email) setErrors({...errors, email: null});
+                                    }}
                                     keyboardType="email-address"
                                     autoCapitalize="none"
                                 />
                             </View>
+                            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
                             {/* Password input with icon & toggle */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, errors.password && styles.inputError]}>
                                 <View style={styles.inputIconWrap}>
-                                    <MaterialCommunityIcons name="lock-outline" size={20} color={THEME.textMuted} />
+                                    <MaterialCommunityIcons name="lock-outline" size={20} color={errors.password ? '#FF4C4C' : THEME.textMuted} />
                                 </View>
                                 <TextInput
                                     style={styles.inputField}
                                     placeholder="Password"
                                     placeholderTextColor={THEME.textMuted}
                                     value={password}
-                                    onChangeText={setPassword}
+                                    onChangeText={(text) => {
+                                        setPassword(text);
+                                        if (errors.password) setErrors({...errors, password: null});
+                                    }}
                                     secureTextEntry={!showPassword}
                                 />
                                 <TouchableOpacity
@@ -120,6 +134,7 @@ const LoginScreen = ({ navigation }) => {
                                     />
                                 </TouchableOpacity>
                             </View>
+                            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
                             {/* Sign In button */}
                             <TouchableOpacity style={styles.signInButton} onPress={handleLogin} activeOpacity={0.85}>
@@ -277,6 +292,17 @@ const styles = StyleSheet.create({
         width: 44,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    inputError: {
+        borderColor: '#FF4C4C',
+        backgroundColor: 'rgba(255,76,76,0.05)',
+    },
+    errorText: {
+        color: '#FF4C4C',
+        fontSize: 12,
+        marginTop: -6,
+        marginBottom: 10,
+        marginLeft: 4,
     },
 
 

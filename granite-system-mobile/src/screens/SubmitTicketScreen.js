@@ -21,11 +21,22 @@ const SubmitTicketScreen = ({ navigation, route }) => {
     const [typePickerVisible, setTypePickerVisible] = useState(false); const [orderPickerVisible, setOrderPickerVisible] = useState(false);
     const [rating, setRating] = useState(5);
     const [orders, setOrders] = useState([]); const [selectedOrder, setSelectedOrder] = useState(presetOrderId); const [loadingOrders, setLoadingOrders] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useFocusEffect(useCallback(() => { fetchMyOrders(); }, []));
     const fetchMyOrders = async () => { setLoadingOrders(true); try { const res = await orderService.getMyOrders(); setOrders(res.data.orders ?? res.data ?? []); } catch (e) { setOrders([]); } finally { setLoadingOrders(false); } };
     const getOrderLabel = (orderId) => { const o = orders.find(o => o._id === orderId); if (!o) return 'Select an order...'; const date = new Date(o.createdAt).toLocaleDateString(); return `#${o._id.slice(-6).toUpperCase()} — LKR ${o.totalPrice?.toLocaleString()} (${date})`; };
-    const validateForm = () => { if (!selectedOrder) { Alert.alert('Validation Error', 'Please select an order.'); return false; } if (!subject.trim()) { Alert.alert('Validation Error', 'Subject is required.'); return false; } if (subject.trim().length < 3) { Alert.alert('Validation Error', 'Subject must be at least 3 characters.'); return false; } if (/^\d+$/.test(subject.trim())) { Alert.alert('Validation Error', 'Subject cannot contain only numbers.'); return false; } if (!description.trim()) { Alert.alert('Validation Error', 'Description is required.'); return false; } if (description.trim().length < 10) { Alert.alert('Validation Error', 'Description must be at least 10 characters.'); return false; } return true; };
+    const validateForm = () => {
+        let newErrors = {};
+        if (!selectedOrder) newErrors.order = 'Please select an order.';
+        if (!subject.trim()) newErrors.subject = 'Subject is required.';
+        else if (subject.trim().length < 3) newErrors.subject = 'Must be at least 3 characters.';
+        else if (/^\d+$/.test(subject.trim())) newErrors.subject = 'Cannot contain only numbers.';
+        if (!description.trim()) newErrors.description = 'Description is required.';
+        else if (description.trim().length < 10) newErrors.description = 'Must be at least 10 characters.';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
     const handleSubmit = async () => { if (!validateForm()) return; setSubmitting(true); try { const userId = await AsyncStorage.getItem('userId'); if (!userId) { Alert.alert('Error', 'Please log in again.'); await logout(); return; } if (type === 'Review') { await productService.submitReview({ orderId: selectedOrder, subject: subject.trim(), description: description.trim(), rating }); } else { await ticketService.create({ user: userId, order: selectedOrder, subject: subject.trim(), description: description.trim(), type }); } Alert.alert('Submitted!', type === 'Review' ? 'Thank you for your review!' : 'Your support ticket has been submitted. We\'ll get back to you soon.', [{ text: 'OK', onPress: () => navigation.goBack() }]); } catch (e) { Alert.alert('Error', e.response?.data?.errors?.[0]?.msg || e.response?.data?.message || 'Could not submit. Please try again.'); } finally { setSubmitting(false); } };
 
     return (
@@ -35,7 +46,8 @@ const SubmitTicketScreen = ({ navigation, route }) => {
                 <Text style={st.label}>Type</Text>
                 <TouchableOpacity style={st.input} onPress={() => setTypePickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name={type === 'Review' ? 'star-outline' : 'headset'} size={20} color={THEME.gold} /><Text style={{ fontSize: 15, color: THEME.textPrimary }}>{type}</Text></View></TouchableOpacity>
                 <Text style={st.label}>Related Order *</Text>
-                <TouchableOpacity style={st.input} onPress={() => setOrderPickerVisible(true)}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name="clipboard-list-outline" size={20} color={selectedOrder ? THEME.gold : THEME.textMuted} /><Text style={{ fontSize: 14, color: selectedOrder ? THEME.textPrimary : THEME.textMuted, flex: 1 }} numberOfLines={1}>{getOrderLabel(selectedOrder)}</Text></View></TouchableOpacity>
+                <TouchableOpacity style={[st.input, errors.order && st.inputError]} onPress={() => {setOrderPickerVisible(true); if(errors.order) setErrors({...errors, order: null});}}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><MaterialCommunityIcons name="clipboard-list-outline" size={20} color={selectedOrder ? THEME.gold : THEME.textMuted} /><Text style={{ fontSize: 14, color: selectedOrder ? THEME.textPrimary : THEME.textMuted, flex: 1 }} numberOfLines={1}>{getOrderLabel(selectedOrder)}</Text></View></TouchableOpacity>
+                {errors.order && <Text style={st.errorText}>{errors.order}</Text>}
                 {type === 'Review' && (
                     <View>
                         <Text style={st.label}>Rating</Text>
@@ -49,9 +61,11 @@ const SubmitTicketScreen = ({ navigation, route }) => {
                     </View>
                 )}
                 <Text style={st.label}>Subject</Text>
-                <TextInput style={st.input} placeholder={type === 'Review' ? 'e.g. Great quality granite!' : 'e.g. Issue with my order'} placeholderTextColor={THEME.textMuted} value={subject} onChangeText={setSubject} />
+                <TextInput style={[st.input, errors.subject && st.inputError]} placeholder={type === 'Review' ? 'e.g. Great quality granite!' : 'e.g. Issue with my order'} placeholderTextColor={THEME.textMuted} value={subject} onChangeText={(t)=>{setSubject(t); if(errors.subject) setErrors({...errors, subject: null});}} />
+                {errors.subject && <Text style={st.errorText}>{errors.subject}</Text>}
                 <Text style={st.label}>Description</Text>
-                <TextInput style={[st.input, { height: 120, textAlignVertical: 'top' }]} placeholder={type === 'Review' ? 'Share your experience with our slabs...' : 'Describe your issue in detail...'} placeholderTextColor={THEME.textMuted} value={description} onChangeText={setDescription} multiline />
+                <TextInput style={[st.input, { height: 120, textAlignVertical: 'top' }, errors.description && st.inputError]} placeholder={type === 'Review' ? 'Share your experience with our slabs...' : 'Describe your issue in detail...'} placeholderTextColor={THEME.textMuted} value={description} onChangeText={(t)=>{setDescription(t); if(errors.description) setErrors({...errors, description: null});}} multiline />
+                {errors.description && <Text style={st.errorText}>{errors.description}</Text>}
                 <TouchableOpacity style={[st.submitBtn, submitting && { opacity: 0.6 }]} onPress={handleSubmit} disabled={submitting} activeOpacity={0.85}>{submitting ? <ActivityIndicator color="#fff" /> : <Text style={st.submitBtnText}>{type === 'Review' ? 'Submit Review' : 'Submit Ticket'}</Text>}</TouchableOpacity>
             </ScrollView>
 
@@ -84,6 +98,8 @@ const st = StyleSheet.create({
     formContent: { padding: 20, paddingBottom: 40 },
     label: { fontSize: 13, fontWeight: '600', color: THEME.textPrimary, marginBottom: 6, marginTop: 16 },
     input: { backgroundColor: THEME.bgInput, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: THEME.border, fontSize: 15, color: THEME.textPrimary },
+    inputError: { borderColor: THEME.danger, backgroundColor: 'rgba(255,76,76,0.05)' },
+    errorText: { color: THEME.danger, fontSize: 12, marginTop: 4, marginLeft: 4 },
     submitBtn: { backgroundColor: THEME.gold, padding: 16, borderRadius: 12, marginTop: 28, alignItems: 'center', shadowColor: THEME.gold, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
     submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center' }, modalContent: { backgroundColor: 'rgba(20,20,40,0.95)', borderRadius: 20, padding: 24, width: '85%', borderWidth: 1, borderColor: THEME.border },

@@ -9,8 +9,7 @@ const api = axios.create({
     baseURL: BASE_URL,
 });
 
-// ── Request Interceptor ─────────────────────────────────────────────────────
-// Automatically attaches the Bearer token to every outgoing request.
+
 api.interceptors.request.use(
     async (config) => {
         const token = await AsyncStorage.getItem('userToken');

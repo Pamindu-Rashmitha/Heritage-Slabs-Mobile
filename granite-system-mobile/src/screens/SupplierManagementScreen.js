@@ -27,12 +27,32 @@ const SupplierManagementScreen = ({ navigation }) => {
     const [companyName, setCompanyName] = useState(''); const [contactPerson, setContactPerson] = useState('');
     const [email, setEmail] = useState(''); const [phone, setPhone] = useState(''); const [materials, setMaterials] = useState('');
     const [formLoading, setFormLoading] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useFocusEffect(useCallback(() => { fetchSuppliers(); }, []));
     const fetchSuppliers = async (isRefresh=false) => { if(isRefresh) setRefreshing(true); else setLoading(true); try { const res = await supplierService.getAll(); setSuppliers(res.data.suppliers??res.data??[]); } catch(e){ Alert.alert('Fetch Error','Could not load suppliers.'); } finally { setLoading(false); setRefreshing(false); } };
     const openAdd = () => { setEditing(null); setCompanyName(''); setContactPerson(''); setEmail(''); setPhone(''); setMaterials(''); setFormVisible(true); };
     const openEdit = (item) => { setEditing(item); setCompanyName(item.companyName); setContactPerson(item.contactPerson); setEmail(item.email); setPhone(item.phone); setMaterials(item.materialsSupplied); setFormVisible(true); };
-    const validateForm = () => { if(!companyName.trim()){Alert.alert('Validation Error','Company name is required.');return false;} if(companyName.trim().length<2){Alert.alert('Validation Error','Company name must be at least 2 characters.');return false;} if(!contactPerson.trim()){Alert.alert('Validation Error','Contact person is required.');return false;} if(contactPerson.trim().length<2){Alert.alert('Validation Error','Contact person must be at least 2 characters.');return false;} if(!email.trim()){Alert.alert('Validation Error','Email is required.');return false;} const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if(!emailRegex.test(email.trim())){Alert.alert('Validation Error','Please enter a valid email address.');return false;} if(!phone.trim()){Alert.alert('Validation Error','Phone number is required.');return false;} const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/; if(!phoneRegex.test(phone.trim())){Alert.alert('Validation Error','Please enter a valid phone number.');return false;} if(!materials.trim()){Alert.alert('Validation Error','Materials supplied is required.');return false;} return true; };
+    const validateForm = () => {
+        let newErrors = {};
+        if(!companyName.trim()) newErrors.companyName = 'Company name is required.';
+        else if(companyName.trim().length < 2) newErrors.companyName = 'Must be at least 2 characters.';
+        if(!contactPerson.trim()) newErrors.contactPerson = 'Contact person is required.';
+        else if(contactPerson.trim().length < 2) newErrors.contactPerson = 'Must be at least 2 characters.';
+        if(!email.trim()) newErrors.email = 'Email is required.';
+        else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!emailRegex.test(email.trim())) newErrors.email = 'Please enter a valid email address.';
+        }
+        if(!phone.trim()) newErrors.phone = 'Phone number is required.';
+        else {
+            const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/;
+            if(!phoneRegex.test(phone.trim())) newErrors.phone = 'Please enter a valid phone number.';
+        }
+        if(!materials.trim()) newErrors.materials = 'Materials supplied is required.';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
     const handleSubmit = async () => { if(!validateForm()) return; setFormLoading(true); try { const body = { companyName:companyName.trim(), contactPerson:contactPerson.trim(), email:email.trim(), phone:phone.trim(), materialsSupplied:materials.trim() }; if(editing) { await supplierService.update(editing._id,body); Alert.alert('Success','Supplier updated successfully.'); } else { await supplierService.create(body); Alert.alert('Success','Supplier added successfully.'); } setFormVisible(false); fetchSuppliers(); } catch(e){ Alert.alert('Error',e.response?.data?.message||e.response?.data?.errors?.[0]?.msg||'Could not save supplier.'); } finally { setFormLoading(false); } };
     const handleDelete = (item) => { Alert.alert('Delete Supplier',`Delete "${item.companyName}"?`,[{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:async()=>{ try { await supplierService.delete(item._id); setSuppliers(p=>p.filter(s=>s._id!==item._id)); } catch(e){ Alert.alert('Delete Failed','Could not delete supplier.'); } }}]); };
 
@@ -49,12 +69,17 @@ const SupplierManagementScreen = ({ navigation }) => {
             <TouchableOpacity style={st.fab} onPress={openAdd} activeOpacity={0.85}><MaterialCommunityIcons name="plus" size={30} color="#fff"/></TouchableOpacity>
 
             <Modal visible={formVisible} transparent animationType="slide"><View style={st.modalOverlay}><View style={[st.modalContent,{width:'90%'}]}>
-                <Text style={st.modalTitle}>{editing?'Edit Supplier':'Add Supplier'}</Text><ScrollView>
-                <Text style={st.label}>Company Name</Text><TextInput style={st.input} placeholder="e.g. Lanka Granite Pvt Ltd" placeholderTextColor={THEME.textMuted} value={companyName} onChangeText={setCompanyName}/>
-                <Text style={st.label}>Contact Person</Text><TextInput style={st.input} placeholder="e.g. John Silva" placeholderTextColor={THEME.textMuted} value={contactPerson} onChangeText={setContactPerson}/>
-                <Text style={st.label}>Email</Text><TextInput style={st.input} placeholder="e.g. john@company.com" placeholderTextColor={THEME.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none"/>
-                <Text style={st.label}>Phone Number</Text><TextInput style={st.input} placeholder="e.g. +94771234567" placeholderTextColor={THEME.textMuted} value={phone} onChangeText={setPhone} keyboardType="phone-pad"/>
-                <Text style={st.label}>Materials Supplied</Text><TextInput style={st.input} placeholder="e.g. Black Galaxy, White Marble" placeholderTextColor={THEME.textMuted} value={materials} onChangeText={setMaterials}/>
+                <Text style={st.modalTitle}>{editing?'Edit Supplier':'Add Supplier'}</Text><ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={st.label}>Company Name</Text><TextInput style={[st.input, errors.companyName && st.inputError]} placeholder="e.g. Lanka Granite Pvt Ltd" placeholderTextColor={THEME.textMuted} value={companyName} onChangeText={(t) => {setCompanyName(t); if(errors.companyName) setErrors({...errors, companyName: null});}}/>
+                {errors.companyName && <Text style={st.errorText}>{errors.companyName}</Text>}
+                <Text style={st.label}>Contact Person</Text><TextInput style={[st.input, errors.contactPerson && st.inputError]} placeholder="e.g. John Silva" placeholderTextColor={THEME.textMuted} value={contactPerson} onChangeText={(t) => {setContactPerson(t); if(errors.contactPerson) setErrors({...errors, contactPerson: null});}}/>
+                {errors.contactPerson && <Text style={st.errorText}>{errors.contactPerson}</Text>}
+                <Text style={st.label}>Email</Text><TextInput style={[st.input, errors.email && st.inputError]} placeholder="e.g. john@company.com" placeholderTextColor={THEME.textMuted} value={email} onChangeText={(t) => {setEmail(t); if(errors.email) setErrors({...errors, email: null});}} keyboardType="email-address" autoCapitalize="none"/>
+                {errors.email && <Text style={st.errorText}>{errors.email}</Text>}
+                <Text style={st.label}>Phone Number</Text><TextInput style={[st.input, errors.phone && st.inputError]} placeholder="e.g. +94771234567" placeholderTextColor={THEME.textMuted} value={phone} onChangeText={(t) => {setPhone(t); if(errors.phone) setErrors({...errors, phone: null});}} keyboardType="phone-pad"/>
+                {errors.phone && <Text style={st.errorText}>{errors.phone}</Text>}
+                <Text style={st.label}>Materials Supplied</Text><TextInput style={[st.input, errors.materials && st.inputError]} placeholder="e.g. Black Galaxy, White Marble" placeholderTextColor={THEME.textMuted} value={materials} onChangeText={(t) => {setMaterials(t); if(errors.materials) setErrors({...errors, materials: null});}}/>
+                {errors.materials && <Text style={st.errorText}>{errors.materials}</Text>}
                 <TouchableOpacity style={[st.submitBtn,formLoading&&{opacity:0.6}]} onPress={handleSubmit} disabled={formLoading}>{formLoading?<ActivityIndicator color="#fff"/>:<Text style={st.submitBtnText}>{editing?'Update Supplier':'Add Supplier'}</Text>}</TouchableOpacity>
                 <TouchableOpacity style={st.modalCancel} onPress={()=>setFormVisible(false)}><Text style={st.modalCancelText}>Cancel</Text></TouchableOpacity>
                 </ScrollView></View></View></Modal>
@@ -81,6 +106,8 @@ const st = StyleSheet.create({
     modalCancel:{paddingVertical:12,marginTop:4},modalCancelText:{fontSize:15,fontWeight:'600',color:THEME.textSecondary,textAlign:'center'},
     label:{fontSize:13,fontWeight:'600',color:THEME.textPrimary,marginBottom:6,marginTop:12},
     input:{backgroundColor:THEME.bgInput,padding:14,borderRadius:12,borderWidth:1,borderColor:THEME.border,fontSize:15,color:THEME.textPrimary},
+    inputError: { borderColor: THEME.danger, backgroundColor: 'rgba(255,76,76,0.05)' },
+    errorText: { color: THEME.danger, fontSize: 12, marginTop: 4, marginLeft: 4 },
     submitBtn:{backgroundColor:THEME.gold,padding:15,borderRadius:12,marginTop:20,alignItems:'center',shadowColor:THEME.gold,shadowOffset:{width:0,height:4},shadowOpacity:0.3,shadowRadius:8,elevation:6},submitBtnText:{color:'#fff',fontSize:16,fontWeight:'700'},
 });
 
