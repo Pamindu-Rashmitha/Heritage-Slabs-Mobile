@@ -89,10 +89,12 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+
+
 const reviewOrder = async (req, res) => {
     try {
         const { orderId, subject, description, rating } = req.body;
-        const Order = require('../models/Order'); // Local import to avoid circular dependency if any
+        const Order = require('../models/Order');
         const User = require('../models/User');
         
         const order = await Order.findById(orderId).populate('products');
